@@ -33,3 +33,9 @@ Les ressources du projet sont originales ; aucune ressource officielle Pokémon 
 Le joueur utilise désormais le personnage aux **cheveux noirs, yeux rouges et veste sombre aux détails rouges**, issu de notre première planche de sprites. L'animation comporte quatre images pour chaque direction (face, gauche, droite et dos). L'atlas léger et transparent est disponible dans `docs/assets/hero-walk.png` et `site/assets/hero-walk.png`.
 
 Le mode coopératif reste en attente ; la démo GitHub Pages est solo.
+
+## Mise à jour du personnage — v0.1.3
+
+Le personnage jouable reprend les détails du premier skin anime en pixel art (cheveux noirs, yeux rouges, tenue noire et rouge). Un atlas transparent de **256 × 400 pixels** fournit **4 directions × 4 images de marche**, découpées en cellules de **64 × 100 pixels**. Il est chargé depuis `docs/assets/hero-reference.png` (et `site/assets/hero-reference.png` en local). Les images restent nettes avec l'interpolation désactivée.
+
+GitHub Pages continue de publier `main /docs`. Le mode coopératif n'est pas activé.

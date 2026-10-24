@@ -78,20 +78,21 @@ const heroWalkAtlas = new Image();
 let heroWalkReady = false;
 heroWalkAtlas.onload = () => { heroWalkReady = true; };
 heroWalkAtlas.onerror = () => { heroWalkReady = false; };
-heroWalkAtlas.src = new URL('./assets/hero-walk.png?v=0.1.2', import.meta.url).href;
+heroWalkAtlas.src = new URL('./assets/hero-reference.png?v=0.1.3', import.meta.url).href;
 const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
+const HERO_FRAME_WIDTH=64;
+const HERO_FRAME_HEIGHT=100;
 function drawHero(px,py,dir,moving,now){
  if(!heroWalkReady){drawHeroFallback(px,py,dir,moving,now);return;}
  const walking = moving || Math.abs(player.rx-player.x)>0.02 || Math.abs(player.ry-player.y)>0.02;
- const frame = walking ? Math.floor(now/125)%4 : 0;
- const row = heroRows[dir] ?? 0;
- // Sprite sheet 4 columns x 4 rows, derived from our first anime pixel-art skin.
- // The sprite's feet stay anchored on the same ground position.
+ const walkFrame=walking ? Math.floor(now/140)%4 : 0;
+ const row=heroRows[dir] ?? 0;
  ctx.fillStyle='#1931296a';
- ctx.beginPath();ctx.ellipse(px,py,14,4,0,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.ellipse(px,py,16,5,0,0,Math.PI*2);ctx.fill();
  ctx.imageSmoothingEnabled=false;
- ctx.drawImage(heroWalkAtlas,frame*32,row*48,32,48,
-   Math.round(px-29),Math.round(py-86),58,87);
+ // Full-fidelity original character: transparent 4x4 atlas, anchored at the feet.
+ ctx.drawImage(heroWalkAtlas,walkFrame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
+   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,Math.round(px-35),Math.round(py-109),70,110);
 }
 function drawMira(px,py,now){
  const bob=Math.sin(now/400)*1.5,x=Math.round(px),y=Math.round(py+bob);
@@ -163,7 +164,7 @@ function animate(now){
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
  if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,player.moving,now);}
  else{drawHero(heroX,heroY,player.dir,player.moving,now);drawMira(miraX,miraY,now);}
- ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-96);
+ ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-119);
  position.textContent='X '+player.x+' / Y '+player.y;miniPos.textContent=player.x+' · '+player.y;
  hint.hidden=!near(player,MIRA,2);
  if((now|0)%8===0)drawMinimap();
