@@ -1,4 +1,5 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
+import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -7,8 +8,8 @@ const position=document.getElementById('position'),miniPos=document.getElementBy
 ctx.imageSmoothingEnabled=false; mc.imageSmoothingEnabled=false;
 let saved={};try{saved=JSON.parse(localStorage.getItem('astria-save')||'{}')||{};}catch{}
 const initial=walkable(saved.x,saved.y)?{x:saved.x,y:saved.y}:SPAWN;
-const player={x:initial.x,y:initial.y,rx:initial.x,ry:initial.y,dir:'down',moving:false};
-let talked=!!saved.talked,lastStep=0,last=performance.now(),camera={x:0,y:0},noticeTimer=0;
+const player={x:initial.x,y:initial.y,rx:initial.x,ry:initial.y,dir:'down',moving:false,fromX:initial.x,fromY:initial.y,stepStartedAt:-Infinity,walkStartedAt:0,lastSuccessfulStepAt:-Infinity};
+let talked=!!saved.talked,lastStep=-Infinity,last=performance.now(),camera={x:0,y:0},noticeTimer=0;
 const keys=new Set();
 const colors={grass:'#659b70',path:'#c4b48a',roof:'#ae655d',roof2:'#4e8292',water:'#407f91'};
 function persist(){try{localStorage.setItem('astria-save',JSON.stringify({x:player.x,y:player.y,talked}));}catch{}}
@@ -83,16 +84,27 @@ const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
 const HERO_FRAME_WIDTH=64;
 const HERO_FRAME_HEIGHT=100;
 function drawHero(px,py,dir,moving,now){
- if(!heroWalkReady){drawHeroFallback(px,py,dir,moving,now);return;}
- const walking = moving || Math.abs(player.rx-player.x)>0.02 || Math.abs(player.ry-player.y)>0.02;
- const walkFrame=walking ? Math.floor(now/140)%4 : 0;
+ const pose=characterPose(now,moving,player.walkStartedAt);
  const row=heroRows[dir] ?? 0;
+ // L'ombre reste au sol pendant que le personnage respire ou marche.
  ctx.fillStyle='#1931296a';
- ctx.beginPath();ctx.ellipse(px,py,16,5,0,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.ellipse(px,py,16*pose.shadowScale,5*pose.shadowScale,0,0,Math.PI*2);ctx.fill();
+ if(!heroWalkReady){
+   ctx.save();ctx.translate(px,py);ctx.scale(pose.scaleX,pose.scaleY);
+   drawHeroFallback(pose.swayX,pose.bobY,dir,moving,now);
+   ctx.restore();
+   return;
+ }
+ ctx.save();
+ ctx.translate(px,py);
+ ctx.scale(pose.scaleX,pose.scaleY);
  ctx.imageSmoothingEnabled=false;
- // Full-fidelity original character: transparent 4x4 atlas, anchored at the feet.
- ctx.drawImage(heroWalkAtlas,walkFrame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
-   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,Math.round(px-35),Math.round(py-109),70,110);
+ // Sprite original : quatre directions et quatre images par direction.
+ // Respiration autour des pieds : la position au sol ne bouge pas.
+ ctx.drawImage(heroWalkAtlas,pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
+   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,
+   Math.round(-35+pose.swayX),Math.round(-109+pose.bobY),70,110);
+ ctx.restore();
 }
 function drawMira(px,py,now){
  const bob=Math.sin(now/400)*1.5,x=Math.round(px),y=Math.round(py+bob);
@@ -114,13 +126,24 @@ function drawMinimap(){
  mc.fillStyle='#f4d48d';mc.fillRect(MIRA.x*sx-2,MIRA.y*sy-2,5,5);
  mc.fillStyle='#f7edd2';mc.fillRect(player.x*sx-2,player.y*sy-2,6,6);
 }
+function updatePlayerPosition(now){
+ const pos=movementPosition(player.fromX,player.fromY,player.x,player.y,now,player.stepStartedAt);
+ player.rx=pos.x;player.ry=pos.y;
+ player.moving=!pos.finished;
+}
 function attempt(dir){
  const now=performance.now();
- if(dialog.open||!DIRECTIONS[dir]||now-lastStep<120)return;
+ if(dialog.open||!DIRECTIONS[dir]||now-lastStep<STEP_DURATION_MS)return;
+ updatePlayerPosition(now);
  lastStep=now;player.dir=dir;
  const result=step(player,dir);
- if(result.moved){player.x=result.x;player.y=result.y;player.moving=true;persist();}
- else player.moving=false;
+ if(result.moved){
+   if(now-player.lastSuccessfulStepAt>STEP_DURATION_MS+85) player.walkStartedAt=now;
+   player.fromX=player.rx;player.fromY=player.ry;
+   player.x=result.x;player.y=result.y;
+   player.stepStartedAt=now;player.lastSuccessfulStepAt=now;
+   player.moving=true;persist();
+ }
 }
 const keysMap={arrowup:'up',z:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',q:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{
@@ -129,11 +152,11 @@ window.addEventListener('keydown',e=>{
  if(!keysMap[key]||dialog.open)return;
  e.preventDefault();keys.add(keysMap[key]);attempt(keysMap[key]);
 });
-window.addEventListener('keyup',e=>{const dir=keysMap[e.key.toLowerCase()];if(dir){keys.delete(dir);if(!keys.size)player.moving=false;}});
-window.addEventListener('blur',()=>{keys.clear();player.moving=false;});
+window.addEventListener('keyup',e=>{const dir=keysMap[e.key.toLowerCase()];if(dir)keys.delete(dir);});
+window.addEventListener('blur',()=>{keys.clear();});
 for(const b of document.querySelectorAll('[data-dir]')){
  b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.dir);attempt(b.dataset.dir);});
- for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys.delete(b.dataset.dir);if(!keys.size)player.moving=false;});
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys.delete(b.dataset.dir);});
 }
 function talk(){
  if(dialog.open)return;
@@ -149,10 +172,10 @@ dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
 if(talked)quest.textContent='✓ Tu as rencontré Mira. À toi d’explorer le Vallon !';
 function animate(now){
  const dt=Math.min(now-last,60);last=now;
- if(keys.size&&now-lastStep>140)attempt([...keys].at(-1));
- if(!keys.size&&now-lastStep>160)player.moving=false;
- const ratio=Math.min(1,dt/90);
- player.rx+=(player.x-player.rx)*ratio;player.ry+=(player.y-player.ry)*ratio;
+ if(keys.size&&now-lastStep>=STEP_DURATION_MS)attempt([...keys].at(-1));
+ updatePlayerPosition(now);
+ // Un déplacement déjà commencé se termine sans saut quand la touche est relâchée.
+ const walking=player.moving||(keys.size>0&&now-player.lastSuccessfulStepAt<=STEP_DURATION_MS+40);
  const w=canvas.width,h=canvas.height;
  const targetX=Math.max(0,Math.min(WIDTH*TILE-w,(player.rx+.5)*TILE-w/2));
  const targetY=Math.max(0,Math.min(HEIGHT*TILE-h,(player.ry+.5)*TILE-h/2));
@@ -162,8 +185,8 @@ function animate(now){
  ctx.drawImage(world,cx,cy,w,h,0,0,w,h);
  const heroX=Math.round((player.rx+.5)*TILE-cx),heroY=Math.round((player.ry+.8)*TILE-cy);
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
- if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,player.moving,now);}
- else{drawHero(heroX,heroY,player.dir,player.moving,now);drawMira(miraX,miraY,now);}
+ if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,walking,now);}
+ else{drawHero(heroX,heroY,player.dir,walking,now);drawMira(miraX,miraY,now);}
  ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-119);
  position.textContent='X '+player.x+' / Y '+player.y;miniPos.textContent=player.x+' · '+player.y;
  hint.hidden=!near(player,MIRA,2);
