@@ -1,27 +1,29 @@
 # Éclats d’Astria
 
-Prototype de RPG 2D **solo** jouable dans un navigateur, avec carte pixel art, déplacements, collisions et dialogue avec Mira.
+Prototype de RPG 2D **solo**, jouable dans un navigateur avec une carte pixel art, des déplacements, des collisions et des dialogues.
 
-Le multijoueur et le mode coopératif sont volontairement **mis en attente**.
+Le multijoueur et le mode coopératif sont en attente.
 
-## Démo en ligne
+## Jouer
 
-Une fois GitHub Pages activé dans **Settings → Pages → Build and deployment → GitHub Actions**, la démo sera accessible à :
+La démo sera accessible sur : https://fen-min.github.io/eclats-astria/
 
-https://fen-min.github.io/eclats-astria/
+Pour activer GitHub Pages la première fois : **Settings → Pages → Build and deployment → Source : Deploy from a branch**, puis sélectionner **Branch : main** et **Folder : /docs**, et enregistrer.
 
-## Commandes locales
+Le dossier `docs/` contient la version statique du jeu publiée par GitHub Pages. Le dossier `site/` conserve l'application utilisée par le serveur local.
 
-- Installer Node.js 22 ou plus récent.
-- `npm start` : lancer le serveur de développement local.
-- `npm test` : vérifier les fonctionnalités.
+## Jouer en local et vérifier le code
+
+- Installer Node.js 22+.
+- `npm start` pour lancer la version locale.
+- `npm test` pour lancer les tests automatiques.
 
 ## Contrôles
 
-ZQSD, WASD ou flèches pour marcher ; E pour parler à Mira ; commandes tactiles sur mobile.
+ZQSD, WASD ou flèches pour se déplacer ; E pour parler à Mira ; commandes tactiles sur mobile.
 
-## État
+## Suite du développement
 
-Version 0.1 : exploration solo. Prochain objectif : trois créatures originales, rencontres sauvages, captures et combats au tour par tour.
+Version 0.1 : exploration solo. Version 0.2 envisagée : créatures originales, rencontres sauvages, combats au tour par tour et captures.
 
-Les ressources graphiques sont originales et aucune ressource officielle Pokémon n'est incluse.
+Les ressources du projet sont originales ; aucune ressource officielle Pokémon n'est utilisée.
