@@ -16,7 +16,8 @@ test('the browser renderer references the detailed sprite on both sites',()=>{
   const js=readFileSync(new URL(`../${folder}/game.js`,import.meta.url),'utf8');
   assert.match(js,/hero-reference\.png/);
   assert.match(js,/down:0,left:1,right:2,up:3/);
-  assert.match(js,/walkFrame\*HERO_FRAME_WIDTH/);
+  assert.match(js,/pose\.frame\*HERO_FRAME_WIDTH/);
+  assert.match(js,/characterPose\(now,moving,player\.walkStartedAt\)/);
   assert.match(js,/imageSmoothingEnabled=false/);
  }
 });
