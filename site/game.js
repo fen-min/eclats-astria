@@ -1,5 +1,6 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js';
+import {renderTerrain,drawWaterAnimation} from './terrain.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -15,39 +16,11 @@ const colors={grass:'#659b70',path:'#c4b48a',roof:'#ae655d',roof2:'#4e8292',wate
 function persist(){try{localStorage.setItem('astria-save',JSON.stringify({x:player.x,y:player.y,talked}));}catch{}}
 function notify(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>toast.hidden=true,3100);}
 function rect(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h);}
-const world=document.createElement('canvas');world.width=WIDTH*TILE;world.height=HEIGHT*TILE;
-const g=world.getContext('2d');g.imageSmoothingEnabled=false;
-function paint(x,y){
- const px=x*TILE,py=y*TILE,t=tileAt(x,y),n=noise(x,y,15);
- rect(g,px,py,32,32,n<.3?'#5b9069':n<.7?'#679b70':'#6e9f72');
- for(let j=0;j<4;j++){rect(g,px+(noise(x+j,y,3)*27|0),py+(noise(x,y+j,7)*27|0),2,3,j%2?'#3f8057':'#91b47c');}
- if(t==='path'||t==='door'){
-   rect(g,px,py,32,32,n<.5?'#c7b88d':'#bca981');
-   for(let i=0;i<6;i++)rect(g,px+(noise(x+i,y,20)*28|0),py+(noise(x,y+i,22)*28|0),3,2,'#a89575');
- }
- if(t==='flower'){
-   for(let i=0;i<2;i++){let a=7+(noise(x,y,i+30)*16|0),b=7+(noise(x,y,i+35)*17|0);
-   rect(g,px+a,py+b,2,11,'#318255');rect(g,px+a-3,py+b-2,8,5,i?'#f4d2d7':'#f2dfa6');}
- }
- if(t==='tallgrass'){
-   for(let i=0;i<4;i++){rect(g,px+4+i*7,py+11+(i%2)*3,5,19,'#347954');rect(g,px+7+i*6,py+9+(i%2)*6,2,17,'#96bf7a');}
- }
- if(t==='tree'||t==='void'){
-   rect(g,px+12,py+17,8,15,'#62564b');
-   rect(g,px+3,py+10,26,19,'#28583e');rect(g,px,py+14,32,9,'#376e4d');
-   rect(g,px+6,py+3,20,21,'#397e55');rect(g,px+12,py+2,12,12,'#4a9362');
-   rect(g,px+11,py+6,7,3,'#85b57b');
- }
- if(t==='water'){rect(g,px,py,32,32,'#407f91');rect(g,px+3,py+6,20,2,'#80b8b2');rect(g,px+12,py+20,17,2,'#5e9daa');}
- if(t==='roof'||t==='roof2'){
-   rect(g,px,py,32,32,t==='roof'?'#8e5154':'#3f697a');
-   rect(g,px+1,py+3,30,25,t==='roof'?'#ae665e':'#568999');
-   rect(g,px+2,py+11,28,3,t==='roof'?'#d08b78':'#84acac');rect(g,px+1,py+29,30,3,'#393d42');
- }
- if(t==='wall'){rect(g,px,py,32,32,'#d3c19b');rect(g,px+10,py+11,12,15,'#577b8a');rect(g,px+12,py+12,8,12,'#9bc4bd');rect(g,px,py+28,32,4,'#8e8270');}
- if(t==='door'){rect(g,px+2,py,28,32,'#805b46');rect(g,px+7,py+4,18,24,'#aa7654');rect(g,px+21,py+17,3,3,'#f2d495');}
-}
-for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++)paint(x,y);
+const world=document.createElement('canvas');
+world.width=WIDTH*TILE;
+world.height=HEIGHT*TILE;
+const g=world.getContext('2d');
+renderTerrain(g,WIDTH,HEIGHT,tileAt,noise);
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}
 function drawHeroFallback(px,py,dir,moving,now){
  const x=Math.round(px-16),y=Math.round(py-69);
@@ -183,6 +156,7 @@ function animate(now){
  camera.y+=(targetY-camera.y)*Math.min(1,dt/130);
  const cx=Math.round(camera.x),cy=Math.round(camera.y);
  ctx.drawImage(world,cx,cy,w,h,0,0,w,h);
+ drawWaterAnimation(ctx,cx,cy,now,tileAt,WIDTH,HEIGHT);
  const heroX=Math.round((player.rx+.5)*TILE-cx),heroY=Math.round((player.ry+.8)*TILE-cy);
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
  if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,walking,now);}

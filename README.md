@@ -39,3 +39,9 @@ Le mode coopératif reste en attente ; la démo GitHub Pages est solo.
 Le personnage jouable reprend les détails du premier skin anime en pixel art (cheveux noirs, yeux rouges, tenue noire et rouge). Un atlas transparent de **256 × 400 pixels** fournit **4 directions × 4 images de marche**, découpées en cellules de **64 × 100 pixels**. Il est chargé depuis `docs/assets/hero-reference.png` (et `site/assets/hero-reference.png` en local). Les images restent nettes avec l'interpolation désactivée.
 
 GitHub Pages continue de publier `main /docs`. Le mode coopératif n'est pas activé.
+
+## Nouveaux décors 0.1.5
+
+La carte utilise maintenant des décors pixel art **originaux générés dans `terrain.js`** : feuillages et sapins volumineux, arbustes, hautes herbes, fleurs, chemins texturés, eau animée et deux maisons détaillées (tuiles, cheminée, fenêtres, portes et jardinières). Les collisions et la progression existantes sont conservées.
+
+Inspiration visuelle : RPG rétro sur navigateur, notamment l'ambiance de PokéSurvivor, sans reprendre les fichiers Pokémon, son code ou ses ressources protégées.
