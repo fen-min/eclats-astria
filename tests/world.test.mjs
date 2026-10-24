@@ -12,7 +12,7 @@ test('spawn is walkable and Mira is a solid character',()=>{
   assert.equal(walkable(MIRA.x,MIRA.y),false);
 });
 test('invalid moves and collisions cannot leave the map',()=>{
-  assert.deepEqual(step({x:8,y:7},'up'),{x:8,y:7,moved:false});
+  assert.deepEqual(step({x:8,y:7},'right'),{x:8,y:7,moved:false});
   assert.deepEqual(step({x:23,y:16},'right'),{x:24,y:16,moved:true});
   assert.deepEqual(step({x:23,y:16},'teleport'),{x:23,y:16,moved:false});
   assert.deepEqual(step({x:2,y:2},'left'),{x:2,y:2,moved:false});
