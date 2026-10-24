@@ -48,7 +48,7 @@ function paint(x,y){
 }
 for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++)paint(x,y);
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}
-function drawHero(px,py,dir,moving,now){
+function drawHeroFallback(px,py,dir,moving,now){
  const x=Math.round(px-16),y=Math.round(py-69);
  const cycle=moving?Math.floor(now/130)%4:0,stepLeg=cycle===1?-4:cycle===3?4:0;
  ctx.fillStyle='#1931296a';ctx.beginPath();ctx.ellipse(px,py,14,4,0,0,Math.PI*2);ctx.fill();
@@ -72,6 +72,26 @@ function drawHero(px,py,dir,moving,now){
    if(dir==='right')r(x+23,y+23,4,3,'#c23649');
    r(x+14,y+31,6,3,'#a53643');
  }
+}
+
+const heroWalkAtlas = new Image();
+let heroWalkReady = false;
+heroWalkAtlas.onload = () => { heroWalkReady = true; };
+heroWalkAtlas.onerror = () => { heroWalkReady = false; };
+heroWalkAtlas.src = new URL('./assets/hero-walk.png?v=0.1.2', import.meta.url).href;
+const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
+function drawHero(px,py,dir,moving,now){
+ if(!heroWalkReady){drawHeroFallback(px,py,dir,moving,now);return;}
+ const walking = moving || Math.abs(player.rx-player.x)>0.02 || Math.abs(player.ry-player.y)>0.02;
+ const frame = walking ? Math.floor(now/125)%4 : 0;
+ const row = heroRows[dir] ?? 0;
+ // Sprite sheet 4 columns x 4 rows, derived from our first anime pixel-art skin.
+ // The sprite's feet stay anchored on the same ground position.
+ ctx.fillStyle='#1931296a';
+ ctx.beginPath();ctx.ellipse(px,py,14,4,0,0,Math.PI*2);ctx.fill();
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(heroWalkAtlas,frame*32,row*48,32,48,
+   Math.round(px-29),Math.round(py-86),58,87);
 }
 function drawMira(px,py,now){
  const bob=Math.sin(now/400)*1.5,x=Math.round(px),y=Math.round(py+bob);
@@ -143,7 +163,7 @@ function animate(now){
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
  if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,player.moving,now);}
  else{drawHero(heroX,heroY,player.dir,player.moving,now);drawMira(miraX,miraY,now);}
- ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-80);
+ ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-96);
  position.textContent='X '+player.x+' / Y '+player.y;miniPos.textContent=player.x+' · '+player.y;
  hint.hidden=!near(player,MIRA,2);
  if((now|0)%8===0)drawMinimap();
