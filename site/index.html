@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b28">
+  <meta name="description" content="Éclats d'Astria : un RPG 2D original en pixel art, jouable dans le navigateur.">
+  <title>Éclats d’Astria — Le Premier Voyage</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo"><span class="star">✦</span><div><div class="brand">ÉCLATS <span>D’ASTRIA</span></div><small>CHAPITRE 00 · LE PREMIER VOYAGE</small></div></div>
+    <div class="status"><span class="version">ALPHA 0.1</span><span class="tag"><b class="dot"></b> AVENTURE SOLO</span></div>
+  </header>
+  <main class="columns">
+    <section class="frame">
+      <div class="frame-heading"><div><div class="eyebrow">RÉGION 01 / LE VALLON</div><h1>Prairies d’Astria</h1></div><div class="sun">☀ <small>AURORE</small></div></div>
+      <div class="canvas-wrap">
+        <canvas id="game" width="896" height="576" aria-label="Jeu : carte du Vallon" tabindex="0"></canvas>
+        <div id="toast" class="toast" aria-live="polite" hidden></div>
+        <div id="hint" class="hint" hidden>APPUIE SUR E POUR PARLER À MIRA</div>
+        <div class="bottom-label">LE VALLON <span id="position">X 23 / Y 16</span> <span class="ornament">✦ ✦ ✦</span></div>
+      </div>
+      <div class="keyboard">Déplacement : <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou flèches · <kbd>E</kbd> pour interagir</div>
+      <div class="touch"><div class="dpad"><button data-dir="up">▲</button><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div><button id="talk" class="talk">PARLER <span>✦</span></button></div>
+    </section>
+    <aside class="side">
+      <section class="panel"><div class="eyebrow">01 / AVENTURIER</div><div class="profile"><div class="avatar">✦</div><div><strong>Jeune Éclaireur</strong><p>Voyageur d’Astria</p></div></div><div class="progress"><i></i></div><div class="pair"><span>MODE</span><b>EXPLORATION SOLO</b></div></section>
+      <section class="panel"><div class="eyebrow">02 / EXPLORATION</div><h2>Carte de la région</h2><canvas id="minimap" width="240" height="156" aria-label="Mini-carte"></canvas><div class="pair"><span>COORDONNÉES</span><b id="miniPos">23 · 16</b></div></section>
+      <section class="panel"><div class="eyebrow">03 / JOURNAL DE QUÊTE</div><h2>Les premiers pas</h2><p class="quest">✧ Trouve <strong>Mira</strong>, la guide du village.</p><p class="quest">✧ Explore les chemins, les bois et le bord du lac.</p><div class="result" id="quest">Nouvelle aventure disponible</div></section>
+      <section class="panel later"><div class="eyebrow">À VENIR</div><p>Rencontres sauvages, créatures originales à capturer et combats au tour par tour.</p><div class="coming">PROCHAINE MISE À JOUR <strong>0.2</strong></div></section>
+    </aside>
+  </main>
+  <footer>ÉCLATS D’ASTRIA · PROTOTYPE ORIGINAL EN PIXEL ART · MODE SOLO</footer>
+</div>
+<dialog id="dialog"><h2>✦ Bienvenue dans le Vallon</h2><p id="speech"></p><button id="close">Continuer l’aventure</button></dialog>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
