@@ -65,3 +65,7 @@ Les deux maisons du village utilisent désormais les sprites approuvés : cottag
 ## Correction de la netteté et des couleurs (0.1.12)
 
 Les deux maisons avaient été réduites à un atlas 256 × 120 (une cellule de 128 × 120 par maison), puis réagrandies en 192 × 176, avec seulement 32 couleurs. La qualité visuelle était dégradée. L'atlas a été reconstruit à partir de la planche illustrée d'origine, avec 96 couleurs et des cellules source de **192 × 176 pixels**, rendues à leur taille native, sans interpolation ni agrandissement. Le détourage a aussi été nettoyé. Les collisions et les entrées existantes restent inchangées. La végétation, le personnage et les autres éléments conservent leur esthétique pixel art existante ; leur homogénéisation graphique peut être poursuivie indépendamment.
+
+## Nouveau personnage animé — version 0.1.13
+
+Le personnage aux cheveux noirs, yeux rouges et tenue sombre utilise maintenant les **32 sprites de marche validés** : huit images pour chacune des quatre directions (face, gauche, droite, dos). L'atlas transparent `assets/hero-walk-8.png` fait 352 × 272 pixels, avec des cellules de 44 × 68 pixels. Les cellules ont été adaptées à leur taille d'affichage pour préserver des contours nets sans lissage lors de l'exploration. La marche défile toutes les 72 ms avec un léger balancement ; la respiration lente reste active à l'arrêt. L'ancienne planche reste dans le dépôt comme ressource historique, mais n'est plus utilisée pour afficher le héros. La sauvegarde, les collisions, le menu et les autres graphismes ne changent pas.

@@ -76,12 +76,13 @@ function drawHeroFallback(px,py,dir,moving,now){
 
 const heroWalkAtlas = new Image();
 let heroWalkReady = false;
-heroWalkAtlas.onload = () => { heroWalkReady = true; };
+heroWalkAtlas.onload = () => { heroWalkReady = heroWalkAtlas.naturalWidth===352 && heroWalkAtlas.naturalHeight===272; };
 heroWalkAtlas.onerror = () => { heroWalkReady = false; };
-heroWalkAtlas.src = new URL('./assets/hero-reference.png?v=0.1.3', import.meta.url).href;
+heroWalkAtlas.src = new URL('./assets/hero-walk-8.png?v=0.1.13', import.meta.url).href;
 const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
-const HERO_FRAME_WIDTH=64;
-const HERO_FRAME_HEIGHT=100;
+// Nouvelle planche : 8 poses par direction, découpées à la taille d'affichage native.
+const HERO_FRAME_WIDTH=44;
+const HERO_FRAME_HEIGHT=68;
 function drawHero(px,py,dir,moving,now){
  const pose=characterPose(now,moving,player.walkStartedAt);
  const row=heroRows[dir] ?? 0;
@@ -98,7 +99,7 @@ function drawHero(px,py,dir,moving,now){
  ctx.translate(px,py);
  ctx.scale(pose.scaleX,pose.scaleY);
  ctx.imageSmoothingEnabled=false;
- // Sprite original : quatre directions et quatre images par direction.
+ // Personnage validé : quatre directions × huit poses, aucune interpolation floue.
  // Respiration autour des pieds : la position au sol ne bouge pas.
  ctx.drawImage(heroWalkAtlas,pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
    HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,

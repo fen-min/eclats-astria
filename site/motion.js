@@ -1,6 +1,7 @@
 // Animation et déplacements indépendants de la fréquence d'affichage.
 export const STEP_DURATION_MS=142;
-export const WALK_FRAME_MS=108;
+export const WALK_FRAME_MS=72;
+export const WALK_FRAMES=8;
 
 export function movementPosition(fromX,fromY,toX,toY,now,start,duration=STEP_DURATION_MS){
   const elapsed=Math.max(0,now-start);
@@ -15,10 +16,10 @@ export function movementPosition(fromX,fromY,toX,toY,now,start,duration=STEP_DUR
 export function characterPose(now,walking,walkStart=0){
   if(walking){
     const elapsed=Math.max(0,now-walkStart);
-    const phase=elapsed*2*Math.PI/(WALK_FRAME_MS*4);
-    const step=Math.abs(Math.sin(phase));
+    const phase=elapsed*2*Math.PI/(WALK_FRAME_MS*WALK_FRAMES);
+    const step=Math.abs(Math.sin(phase*2));
     return {
-      frame:Math.floor(elapsed/WALK_FRAME_MS)%4,
+      frame:Math.floor(elapsed/WALK_FRAME_MS)%WALK_FRAMES,
       swayX:Math.sin(phase)*0.65,
       bobY:-1.5*step,
       scaleX:1-0.004*step,

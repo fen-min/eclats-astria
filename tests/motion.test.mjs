@@ -28,9 +28,10 @@ test('idle breath is subtle, periodic and anchored',()=>{
   assert.ok(high.scaleY>low.scaleY);
   assert.ok(high.scaleY<1.03);
 });
-test('walking has four poses, a small bob and no abrupt size jumps',()=>{
-  const frames=[0,108,216,324].map(t=>characterPose(t,true,0).frame);
-  assert.deepEqual(frames,[0,1,2,3]);
+test('walking has eight distinct poses per direction and returns smoothly to frame zero',()=>{
+  const frames=Array.from({length:8},(_,i)=>characterPose(i*72,true,0).frame);
+  assert.deepEqual(frames,[0,1,2,3,4,5,6,7]);
   assert.ok(Math.abs(characterPose(70,true,0).bobY)<=1.5);
-  assert.equal(characterPose(432,true,0).frame,0);
+  assert.equal(characterPose(576,true,0).frame,0);
+  assert.equal(characterPose(500,false,0).frame,0);
 });
