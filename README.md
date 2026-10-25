@@ -77,3 +77,7 @@ Certaines images latérales et arrière de la planche à 32 poses contiennent de
 ## Animation de repos dédiée — version 0.1.15
 
 Le personnage dispose d'une **seconde planche de sprites**, `assets/hero-idle-4.png`, qui comporte quatre positions immobiles (face, gauche, droite, dos), découpées depuis le dessin validé en 176 × 68 pixels, fond transparent. Quand le joueur ne marche pas, cette planche est utilisée avec la respiration existante ; pendant les déplacements, la planche `hero-walk-8.png` et ses huit images par direction restent inchangées. Le rendu reste en pixels nets sans lissage. La sauvegarde, les cartes, les collisions et le menu multi-jeux ne sont pas modifiés.
+
+## Affichage du repos corrigé — version 0.1.16
+
+Le sprite de repos existait déjà en version 0.1.15, mais ressemblait beaucoup à la pose fixe de marche et l'effet était presque invisible à 44 × 68 pixels. Le moteur dessine désormais séparément les jambes (fixes au sol) et le torse/tête (respiration verticale de 0 à 3 px, petite oscillation horizontale). La planche à huit images est strictement réservée au déplacement. Le fichier JavaScript principal et les images portent un identifiant de version dans leur URL pour éviter l'ancienne version en cache du navigateur.

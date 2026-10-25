@@ -24,7 +24,9 @@ export function characterPose(now,walking,walkStart=0){
       bobY:-1.5*step,
       scaleX:1-0.004*step,
       scaleY:1+0.007*step,
-      shadowScale:1-0.045*step
+      shadowScale:1-0.045*step,
+      chestRise:0,
+      idleDriftX:0
     };
   }
   // Respiration plus lisible à 44 × 68 pixels, sans déplacer les pieds.
@@ -36,6 +38,8 @@ export function characterPose(now,walking,walkStart=0){
     bobY:0,
     scaleX:1-0.016*breath,
     scaleY:1+0.05*breath,
-    shadowScale:1-0.06*breath
+    shadowScale:1-0.06*breath,
+    chestRise:Math.round(3*breath),
+    idleDriftX:Math.round(Math.sin(now*2*Math.PI/3200))
   };
 }

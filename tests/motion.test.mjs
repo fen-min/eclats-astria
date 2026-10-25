@@ -31,6 +31,11 @@ test('idle breath is visible at character size, periodic, and feet stay planted'
   assert.ok(expand.shadowScale<contract.shadowScale);
   assert.ok(Math.abs(half.scaleY-next.scaleY)<1e-10);
   assert.ok(Math.abs(expand.swayX)<=0.9);
+  assert.equal(expand.chestRise,3);
+  assert.equal(contract.chestRise,0);
+  assert.equal(expand.idleDriftX,1);
+  assert.ok(Math.abs(contract.idleDriftX)<=1);
+  assert.equal(characterPose(475,true,0).chestRise,0);
 });
 test('walking has eight distinct poses per direction and returns smoothly to frame zero',()=>{
   const frames=Array.from({length:8},(_,i)=>characterPose(i*72,true,0).frame);

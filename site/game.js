@@ -1,5 +1,5 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
-import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js';
+import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,drawWaterAnimation} from './terrain.js';
 import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
@@ -86,7 +86,7 @@ heroIdleAtlas.onload = () => {
   heroIdleReady = heroIdleAtlas.naturalWidth===176 && heroIdleAtlas.naturalHeight===68;
 };
 heroIdleAtlas.onerror = () => { heroIdleReady = false; };
-heroIdleAtlas.src = new URL('./assets/hero-idle-4.png?v=0.1.15', import.meta.url).href;
+heroIdleAtlas.src = new URL('./assets/hero-idle-4.png?v=0.1.16', import.meta.url).href;
 const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
 // Nouvelle planche : 8 poses par direction, découpées à la taille d'affichage native.
 const HERO_FRAME_WIDTH=44;
@@ -108,15 +108,25 @@ function drawHero(px,py,dir,moving,now){
  }
  ctx.save();
  ctx.translate(px,py);
- ctx.scale(pose.scaleX,pose.scaleY);
  ctx.imageSmoothingEnabled=false;
  if(idle){
-   // Quatre sprites fixes au repos, auxquels la respiration donne vie.
+   // Véritable animation de repos : jambes fixes et haut du corps animé.
+   // On évite de simplement étirer le sprite entier (trop discret à 44x68).
+   // Ligne de séparation située entre le bassin et les jambes.
+   const seam=49;
+   const footHeight=HERO_FRAME_HEIGHT-seam;
+   const idleX=row*HERO_FRAME_WIDTH;
+   // Les pieds conservent exactement leur position sur la carte.
    ctx.drawImage(heroIdleAtlas,
-     row*HERO_FRAME_WIDTH,0,HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,
-     Math.round(-22+pose.swayX),Math.round(-68+pose.bobY),
-     HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT);
+     idleX,seam,HERO_FRAME_WIDTH,footHeight,
+     -22,-footHeight,HERO_FRAME_WIDTH,footHeight);
+   // Thorax et tête montent de 0 à 3 pixels pendant la respiration.
+   ctx.drawImage(heroIdleAtlas,
+     idleX,0,HERO_FRAME_WIDTH,seam,
+     -22+pose.idleDriftX,-68-pose.chestRise,
+     HERO_FRAME_WIDTH,seam+pose.chestRise);
  }else{
+   ctx.scale(pose.scaleX,pose.scaleY);
    // Marche : les huit images par direction sont conservées.
    // On ignore le trait noir parasite des premières lignes latérales/dos.
    const topTrim=row===0?0:4;
