@@ -2,7 +2,7 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
-import {COMPANIONS,CAT_FRAME,CAT_ROWS,MIAW_WALK_FRAME,MIAW_MEOW_FRAME,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.25';
+import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.26';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -18,14 +18,30 @@ let follower=null,footsteps=[{x:player.x,y:player.y}];
 const companionStatus=document.getElementById('companion-status');
 const companionList=document.getElementById('companion-list');
 const dialogTitle=document.getElementById('dialog-title');
-const miawAtlases={idle:new Image(),walk:new Image(),meow:new Image()};
-const miawReady={idle:false,walk:false,meow:false};
-for(const [kind,frame] of [['idle',CAT_FRAME],['walk',MIAW_WALK_FRAME],['meow',MIAW_MEOW_FRAME]]){
- const image=miawAtlases[kind];
- image.onload=()=>{miawReady[kind]=image.naturalWidth===frame.width*frame.frames&&image.naturalHeight===frame.height*frame.rows;};
- image.onerror=()=>{miawReady[kind]=false;};
- image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.25',import.meta.url).href;
+const miawAtlas=new Image();
+let miawReady=false;
+miawAtlas.onload=()=>{miawReady=miawAtlas.naturalWidth===MIAW_SHEET.width&&miawAtlas.naturalHeight===MIAW_SHEET.height;};
+miawAtlas.onerror=()=>{miawReady=false;};
+fetch(new URL('./assets/miaw-actions.base64?v=0.1.26',import.meta.url))
+ .then(response=>{if(!response.ok)throw new Error('Atlas Miaw indisponible');return response.text();})
+ .then(encoded=>{miawAtlas.src='data:image/png;base64,'+encoded.replace(/\s/g,'');})
+ .catch(error=>console.warn('Miaw : image de secours',error));
+const miawPreview={kind:null,startedAt:0};
+const miawAnimationSelect=document.getElementById('miaw-animation-select');
+const miawAnimationPlay=document.getElementById('miaw-animation-play');
+for(const [kind,animation] of Object.entries(MIAW_ANIMATIONS)){
+ const option=document.createElement('option');
+ option.value=kind;option.textContent=animation.label+' · '+animation.frames+' images';
+ miawAnimationSelect.append(option);
 }
+miawAnimationPlay.addEventListener('click',()=>{
+ if(!selectedCompanion)return;
+ const kind=miawAnimationSelect.value;
+ if(!MIAW_ANIMATIONS[kind])return;
+ miawPreview.kind=kind;
+ miawPreview.startedAt=performance.now();
+ notify('Miaw : '+MIAW_ANIMATIONS[kind].label);
+});
 function resetFollower(){
  footsteps=[{x:player.x,y:player.y}];
  if(!selectedCompanion){follower=null;return;}
@@ -38,6 +54,7 @@ function updateCompanionUI(){
  companionStatus.textContent=selectedCompanion
  ?selectedCompanion.name+' · '+selectedCompanion.role+' · Te suit'
  :'Aucun compagnon — parle à Maria.';
+ miawAnimationPlay.disabled=!selectedCompanion;
 }
 updateCompanionUI();
 const keys=new Set();
@@ -203,21 +220,33 @@ function drawCompanion(px,py,now){
  ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,11,3,0,0,Math.PI*2);ctx.fill();
  const walking=Math.abs(follower.fromX-follower.toX)+Math.abs(follower.fromY-follower.toY)>.01
    && now-follower.stepStartedAt<STEP_DURATION_MS;
- const pose=miawAnimation(now,follower.dir,walking,Math.max(0,now-follower.lastMoveAt));
- const kind=miawReady[pose.kind]?pose.kind:'idle';
- if(miawReady[kind]){
-  const frame=kind==='walk'?MIAW_WALK_FRAME:kind==='meow'?MIAW_MEOW_FRAME:CAT_FRAME;
-  const image=miawAtlases[kind];
-  const row=kind===pose.kind?pose.row:(CAT_ROWS[follower.dir]??0);
-  const col=kind===pose.kind?pose.frame:0;
+ let override=null;
+ if(miawPreview.kind){
+  const animation=MIAW_ANIMATIONS[miawPreview.kind];
+  if(now-miawPreview.startedAt<animation.frames*1000/animation.fps){
+   override=miawPreview;
+  }else miawPreview.kind=null;
+ }
+ const pose=miawAnimation(now,follower.dir,walking,Math.max(0,now-follower.lastMoveAt),override);
+ if(miawReady){
+  ctx.save();
+  ctx.translate(Math.round(px),Math.round(py));
+  // La nouvelle planche est de profil droit uniquement : on retourne à gauche.
+  if(follower.dir==='left')ctx.scale(-1,1);
   ctx.imageSmoothingEnabled=false;
-  // Les deux planches 64px sont affichées à l'échelle du compagnon :
-  // Miaw ne grandit pas quand il commence à marcher ou à miauler.
-  const drawW=kind==='meow'||kind==='walk'?48:frame.width;
-  const drawH=kind==='meow'||kind==='walk'?48:frame.height;
-  ctx.drawImage(image,col*frame.width,row*frame.height,frame.width,frame.height,
-   Math.round(px-drawW/2),Math.round(py-drawH+1),drawW,drawH);
+  function frame(kind,index,scale=.55,lift=0){
+   const source=miawFrameRect(kind,index);
+   const dw=Math.round(source.width*scale),dh=Math.round(source.height*scale);
+   ctx.drawImage(miawAtlas,source.x,source.y,source.width,source.height,
+     -Math.round(dw/2),-dh+3+lift,dw,dh);
+  }
+  if(pose.kind==='elemental'){
+   frame('idle',0);
+   frame('elemental',pose.frame,.55,-5);
+  }else frame(pose.kind,pose.frame);
+  ctx.restore();
  }else{
+  // Silhouette de secours pendant le chargement, aucun ancien atlas réutilisé.
   rect(ctx,px-9,py-18,18,16,'#e15c25');
   rect(ctx,px-7,py-23,5,7,'#30212c');
   rect(ctx,px+2,py-23,5,7,'#30212c');
