@@ -167,5 +167,39 @@ function animate(now){
  if((now|0)%8===0)drawMinimap();
  requestAnimationFrame(animate);
 }
+
+// Mode plein écran : utilisable sans extension et avec une alternative si bloqué.
+const gameFrame=document.querySelector('.frame');
+const fullscreenButton=document.getElementById('fullscreen-toggle');
+function updateFullscreenLabel(){
+ const active=document.fullscreenElement===gameFrame || gameFrame.classList.contains('fullscreen-fallback');
+ fullscreenButton.textContent=active?'⤢ Réduire':'⛶ Plein écran';
+ fullscreenButton.setAttribute('aria-label',active?'Quitter le plein écran':'Agrandir le jeu en plein écran');
+ fullscreenButton.setAttribute('aria-pressed',String(active));
+}
+async function toggleGameFullscreen(){
+ if(document.fullscreenElement===gameFrame){
+  try{await document.exitFullscreen();}catch(error){console.warn('Sortie du plein écran impossible',error);}
+ }else if(gameFrame.classList.contains('fullscreen-fallback')){
+  gameFrame.classList.remove('fullscreen-fallback');
+ }else{
+  try{
+   if(!gameFrame.requestFullscreen)throw new Error('API plein écran non disponible');
+   await gameFrame.requestFullscreen();
+  }catch(error){
+   gameFrame.classList.add('fullscreen-fallback');
+  }
+ }
+ updateFullscreenLabel();
+}
+fullscreenButton.addEventListener('click',toggleGameFullscreen);
+document.addEventListener('fullscreenchange',updateFullscreenLabel);
+window.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&gameFrame.classList.contains('fullscreen-fallback')){
+  gameFrame.classList.remove('fullscreen-fallback');updateFullscreenLabel();
+ }
+});
+updateFullscreenLabel();
+
 notify('Bienvenue dans le Vallon ! Trouve Mira, la guide.');
 requestAnimationFrame(animate);
