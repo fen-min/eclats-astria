@@ -49,9 +49,9 @@ test('both browser builds provide Maria recruitment, persistence and follower dr
   assert.match(g,/followerOnHeroStep\(now\)/);
   assert.match(g,/drawCompanion\(px,py,now\)/);
   assert.match(g,/renderCompanionChoices\(/);
-  assert.match(g,/assets\/miaw-idle\.png\?v=0\.1\.23/);
-  assert.match(g,/assets\/miaw-meow\.png\?v=0\.1\.23/);
-  assert.match(g,/assets\/miaw-walk\.png\?v=0\.1\.23/);
+  // Le moteur charge les trois PNG à partir d'un nom de fichier dynamique.
+  assert.ok(g.includes("image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.23'"));
+  for(const kind of ['idle','walk','meow'])assert.ok(g.includes("'"+kind+"'"));
   assert.match(g,/miawAnimation\(now,follower\.dir,walking/);
   assert.match(h,/id="companion-list"/);
   assert.match(h,/id="companion-status"/);
