@@ -13,13 +13,13 @@ export function tileAt(x,y) {
   if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=WIDTH||y>=HEIGHT) return 'void';
   const pond=((x-8)/5.2)**2+((y-24)/3.5)**2;
   if(pond<1&&x<15&&y>19) return 'water';
-  if(x>=8&&x<=15&&y>=7&&y<=12) {
-    if(y<=9) return 'roof';
+  if(x>=9&&x<=13&&y>=9&&y<=12) {
+    if(y<=10) return 'roof';
     if(x===11&&y===12) return 'door';
     return 'wall';
   }
-  if(x>=31&&x<=38&&y>=7&&y<=12) {
-    if(y<=9) return 'roof2';
+  if(x>=33&&x<=37&&y>=9&&y<=12) {
+    if(y<=10) return 'roof2';
     if(x===35&&y===12) return 'door';
     return 'wall';
   }

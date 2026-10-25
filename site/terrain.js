@@ -1,4 +1,4 @@
-// Décors originaux d'Éclats d'Astria : pixel art 32 px, aucune image Pokémon.
+// Décors originaux d'Éclats d'Astria : pixel art 32 px, sprites compacts version 0.1.7.
 const TILE_SIZE=32;
 const C={
   grass:['#659c76','#6da680','#75ae81','#5e966f'],
@@ -75,72 +75,76 @@ function wildflower(g,px,py,petals){
  box(g,px-5,py,3,3,petals);box(g,px+2,py,3,3,petals);
  box(g,px-2,py+2,4,3,petals);box(g,px-1,py,2,2,'#f6d57e');
 }
+
 function shrub(g,px,py,variant=0){
- box(g,px+2,py+13,28,13,'#264d45');
- box(g,px+0,py+10,32,10,'#286751');
- box(g,px+4,py+6,25,15,variant?'#367a5a':'#398360');
- box(g,px+8,py+3,17,12,'#469969');
- box(g,px+9,py+6,8,3,'#81b976');box(g,px+21,py+11,5,3,'#6eac75');
- box(g,px+3,py+20,25,4,'#255743');
+ // Petits buissons occupant seulement le centre d'une tuile.
+ const x=px+5,y=py+8;
+ box(g,x+2,y+12,21,7,'#264d45');
+ box(g,x,y+7,25,10,'#286751');
+ box(g,x+4,y+4,18,11,variant?'#367a5a':'#398360');
+ box(g,x+7,y,13,8,'#469969');
+ box(g,x+6,y+5,6,2,'#81b976');
+ box(g,x+17,y+11,4,2,'#6eac75');
+}
+function drawReeds(g,px,py,noise,x,y){
+ // Grappes d'herbes espacées, avec des tiges étroites et lisibles.
+ for(let j=0;j<2;j++){
+  const bx=px+3+j*13+(noise(x,y,j+91)*3|0);
+  const top=py+9+(j===0?3:0);
+  box(g,bx,top+9,12,12,'#244f3b');
+  for(let i=0;i<4;i++){
+   const h=11+((i+j)%3)*3;
+   box(g,bx+i*3,py+29-h,2,h,'#2e6449');
+   box(g,bx+i*3+1,py+26-h,2,h, i%2?'#4f985d':'#3c8454');
+   box(g,bx+i*3+1,py+29-h,1,5,'#a4ca7a');
+  }
+ }
 }
 function grasses(g,x,y,type,noise){
  const px=x*32,py=y*32;
- if(type==='tallgrass'){
-  box(g,px+1,py+24,30,6,'#457d57');
-  for(let i=0;i<6;i++){
-   const ox=px+1+i*5, h=13+(i%3)*4;
-   box(g,ox+1,py+30-h,5,h,'#2c684f');
-   box(g,ox+2,py+29-h,3,h-2,(i%2?'#4a925e':'#36845d'));
-   box(g,ox+3,py+31-h,2,8,'#a2cb7a');
-   box(g,ox,py+21,2,7,'#216447');
+ if(type==='tallgrass')drawReeds(g,px,py,noise,x,y);
+ if(type==='flower'){
+  if(noise(x,y,57)<.25){
+   shrub(g,px,py,choose(noise,x,y,58,2));
+  }else{
+   wildflower(g,px+11,py+14,noise(x,y,37)<.5?'#f0d4e3':'#fff0ba');
+   wildflower(g,px+23,py+19,noise(x,y,52)<.5?'#f8b4b9':'#f7e8ad');
   }
  }
- if(type==='flower'){
-  if(noise(x,y,57)<.35){shrub(g,px+1,py+5,choose(noise,x,y,58,2));return;}
-  wildflower(g,px+10,py+12,noise(x,y,37)<.5?'#f0d4e3':'#fff0ba');
-  wildflower(g,px+23,py+18,noise(x,y,52)<.5?'#f8b4b9':'#f7e8ad');
-  box(g,px+3,py+6,6,3,'#a3c785');
- }
  if(type==='grass'&&noise(x,y,105)<.085){
-  box(g,px+9,py+13,9,5,'#6daf70');box(g,px+10,py+9,3,9,'#447e52');
-  box(g,px+19,py+12,4,7,'#5b945c');
+  box(g,px+9,py+15,8,4,'#6daf70');
+  box(g,px+10,py+11,2,8,'#447e52');
+  box(g,px+19,py+14,3,5,'#5b945c');
  }
 }
 function tree(g,x,y,noise){
  const px=x*32,py=y*32;
- const sway=choose(noise,x,y,61,5)-2;
+ const sway=choose(noise,x,y,61,3)-1;
  const cx=px+16+sway;
- // Ombre profonde et racines.
- box(g,cx-16,py+25,35,8,'#315f4a');
- box(g,cx-6,py+9,14,24,'#463c36');
- box(g,cx-3,py+13,5,16,'#795744');
- box(g,cx-11,py+27,7,3,'#665044');box(g,cx+6,py+28,7,3,'#695044');
- if(noise(x,y,66)<.24){
-  // Pin élancé : plusieurs étages en chevrons pixellisés.
-  const tiers=[[py-25,9],[py-17,16],[py-8,22],[py+2,26],[py+12,28]];
-  tiers.forEach(([yy,half],i)=>{
-   box(g,cx-half-1,yy+6,half*2+3,9,'#163f3f');
-   box(g,cx-half+3,yy+1,half*2-5,8,'#28654d');
-   box(g,cx-half+8,yy-3,half*2-15,6,'#3b8658');
-   box(g,cx-half+9,yy,7,3,'#7dae6c');
-   if(i>1)box(g,cx+8,yy+8,9,3,'#1f5643');
-  });
+ // Petits arbres dessinés sur une empreinte ~38 x 50 px.
+ box(g,cx-12,py+27,26,5,'#315f4a');
+ box(g,cx-4,py+12,9,19,'#463c36');
+ box(g,cx-1,py+14,3,16,'#795744');
+ if(noise(x,y,66)<.22){
+  // Sapin compact : des étages coniques et non une immense canopée.
+  for(const [yy,half] of [[-18,7],[-10,11],[0,15],[10,18]]){
+   box(g,cx-half,py+yy+6,half*2,9,'#163f3f');
+   box(g,cx-half+3,py+yy+2,half*2-6,9,'#28654d');
+   box(g,cx-half+6,py+yy,half*2-12,5,'#3b8658');
+  }
+  box(g,cx-3,py-12,6,3,'#7dae6c');
  }else{
-  // Houppier volumineux : silhouettes étagées + reflets en touffes.
-  box(g,cx-17,py-2,35,30,'#183e3c');
-  box(g,cx-24,py+5,48,14,'#1c5144');
-  box(g,cx-20,py-14,40,29,'#245f49');
-  box(g,cx-13,py-25,29,22,'#2b7352');
-  box(g,cx-7,py-30,18,16,'#397f54');
-  box(g,cx-19,py-11,27,16,'#368154');
-  box(g,cx+3,py-14,21,25,'#2e744e');
-  box(g,cx-22,py+2,14,11,'#3f9260');
-  box(g,cx+6,py-23,12,9,'#46925c');
-  for(let i=0;i<12;i++){
-   const ox=(noise(x+i*13,y,113+i)*35|0)-18;
-   const oy=(noise(x,y+i*17,132+i)*31|0)-21;
-   box(g,cx+ox,py+oy,4+(i%2)*2,3,
-       i%3===0?'#a0c776':i%3===1?'#6fb16d':'#4a985f');
+  box(g,cx-17,py+8,34,13,'#183e3c');
+  box(g,cx-20,py+3,40,12,'#1c5144');
+  box(g,cx-16,py-8,33,19,'#245f49');
+  box(g,cx-11,py-15,24,16,'#2b7352');
+  box(g,cx-6,py-19,14,12,'#397f54');
+  box(g,cx-16,py+2,15,11,'#368154');
+  box(g,cx+5,py-7,13,14,'#2e744e');
+  for(let i=0;i<7;i++){
+   const ox=(noise(x+i*13,y,113+i)*26|0)-13;
+   const oy=(noise(x,y+i*17,132+i)*22|0)-12;
+   box(g,cx+ox,py+oy,4+(i%2),3,i%3===0?'#a0c776':i%3===1?'#6fb16d':'#4a985f');
   }
  }
 }
@@ -154,66 +158,61 @@ function pane(g,x,y){
  box(g,x-4,y+27,39,5,'#9b7454');
  box(g,x-2,y+27,33,2,'#e4c38c');
 }
+
 function house(g,x,y,roofVariant,doorColumn,noise){
- const sx=x*32, sy=y*32, w=256;
+ // Façade compacte : largeur cinq cases, entrée toujours sur la bonne case.
+ const sx=x*32,sy=y*32,w=160;
  const red=roofVariant==='roof';
  const p=red?{dark:'#713f45',mid:'#aa5a59',lit:'#d88674',hi:'#efac82'}:
              {dark:'#354e60',mid:'#507f85',lit:'#6b9da1',hi:'#a1bec1'};
- // Maison complète : toit incliné, façade en bois/plâtre, fenêtres et porte.
- box(g,sx+2,sy+171,w+5,17,'#446048');
- box(g,sx+8,sy+93,w-16,94,'#735742');
- box(g,sx+13,sy+99,w-26,85,red?'#e4ce9d':'#d6d2ac');
- box(g,sx+16,sy+105,w-32,8,red?'#f2ddaa':'#e9dfba');
- for(let j=0;j<9;j++)box(g,sx+20+j*25,sy+116,2,63,'#c5b181');
- // Wooden uprights and corners.
- for(const off of [11,36,219,241]){
-  box(g,sx+off,sy+99,7,86,C.timberDark);
-  box(g,sx+off+2,sy+102,2,78,'#ab7e56');
- }
- box(g,sx+11,sy+175,w-22,10,'#876b4f');
- box(g,sx+12,sy+176,w-24,3,'#c7aa7c');
- // Shingled roof with a stepped upper silhouette.
- poly(g,[[sx-6,sy+101],[sx+8,sy+26],[sx+33,sy+8],[sx+w-35,sy+8],[sx+w-9,sy+26],[sx+w+7,sy+101]],p.dark);
- poly(g,[[sx,sy+92],[sx+16,sy+29],[sx+40,sy+13],[sx+w-42,sy+13],[sx+w-17,sy+29],[sx+w,sy+92]],p.mid);
- box(g,sx+32,sy+13,w-64,5,p.hi);
- for(let row=0;row<8;row++){
-  const yy=sy+25+row*9;
-  if(yy>sy+89)break;
-  box(g,sx+20,yy,w-40,2,row%2?p.dark:p.lit);
-  for(let col=0;col<13;col++){
-   const xx=sx+20+col*18+(row%2?9:0);
-   if(xx>=sx+w-22)break;
-   box(g,xx,yy+2,2,5,row%2?p.lit:p.dark);
+ box(g,sx+5,sy+64,150,62,'#6d5544');
+ box(g,sx+8,sy+66,144,57,red?'#e4ce9d':'#d6d2ac');
+ box(g,sx+9,sy+69,142,5,'#f2ddaa');
+ box(g,sx+8,sy+116,144,8,'#a38d6a');
+ // Charpente : toiture à pente et petits rangs de tuiles.
+ poly(g,[[sx,sy+65],[sx+13,sy+13],[sx+28,sy+1],[sx+131,sy+1],[sx+147,sy+13],[sx+w,sy+65]],p.dark);
+ poly(g,[[sx+5,sy+61],[sx+19,sy+17],[sx+33,sy+6],[sx+127,sy+6],[sx+141,sy+17],[sx+155,sy+61]],p.mid);
+ box(g,sx+31,sy+6,99,4,p.hi);
+ for(let row=0;row<5;row++){
+  const yy=sy+18+row*9;
+  box(g,sx+17,yy,126,2,row%2?p.dark:p.lit);
+  for(let col=0;col<8;col++){
+   const xx=sx+20+col*17+(row%2?7:0);
+   if(xx>sx+137)break;
+   box(g,xx,yy+2,2,5,p.dark);
   }
  }
- box(g,sx-4,sy+91,w+8,11,p.dark);
- box(g,sx+1,sy+92,w-2,3,p.hi);
- box(g,sx+3,sy+99,w-6,4,'#e3cf9c');
- // Cheminée, ventilateurs, tuiles d'ornement.
- box(g,sx+w-56,sy-2,27,36,'#6f5446');
- box(g,sx+w-59,sy-4,33,8,'#c08f72');
- box(g,sx+w-51,sy+4,17,14,'#a9785d');
- box(g,sx+w-45,sy+11,5,5,'#634940');
- for(let k=0;k<4;k++)box(g,sx+51+k*47,sy+54,17,3,p.hi);
- // Deux fenêtres écartées de l'accès central.
- pane(g,sx+45,sy+125);
- pane(g,sx+179,sy+125);
- // Porte à la colonne du tile logique (accessible par les routes).
- const dx=sx+doorColumn*32+1;
- box(g,dx-5,sy+115,42,70,'#604334');
- box(g,dx-1,sy+119,34,67,'#b38359');
- box(g,dx+5,sy+125,24,61,'#7a4e40');
- box(g,dx+18,sy+126,3,60,'#573b34');
- box(g,dx+25,sy+151,4,4,'#efca83');
- box(g,dx-12,sy+183,55,6,'#bdafa0');
- box(g,dx-6,sy+187,43,5,'#8a7c69');
- // Plantes et caisses décoratives en façade.
- for(const ax of [sx+26,sx+214]){
-  box(g,ax,sy+167,21,15,'#805a42');
-  box(g,ax+3,sy+169,15,8,'#477c50');
-  box(g,ax-2,sy+164,24,5,'#4d9561');
-  box(g,ax+8,sy+157,6,6,'#78b96d');
-  wildflower(g,ax+11,sy+159,red?'#f0abc0':'#f8deb2');
+ box(g,sx+1,sy+60,158,6,p.dark);
+ box(g,sx+6,sy+62,148,3,p.hi);
+ // Cheminée basse, lucarne et poutres.
+ box(g,sx+120,sy-3,17,23,'#6f5446');
+ box(g,sx+118,sy-5,21,5,'#c08f72');
+ box(g,sx+124,sy+2,8,10,'#a9785d');
+ for(const bx of [12,143]){
+  box(g,sx+bx,sy+69,5,53,'#684a3e');
+  box(g,sx+bx+1,sy+72,2,47,'#ae7e55');
+ }
+ // Deux fenêtres qui restent sur les cases logiques du bâtiment.
+ for(const wx of [sx+23,sx+121]){
+  box(g,wx-2,sy+78,24,26,'#614938');
+  box(g,wx,sy+79,20,21,'#e3bd7d');
+  box(g,wx+3,sy+81,14,15,'#79bbca');
+  box(g,wx+9,sy+81,2,15,'#f1d7a3');
+  box(g,wx+2,sy+88,16,2,'#f1d7a3');
+  box(g,wx-3,sy+100,26,4,'#9b7454');
+ }
+ // Porte visuellement alignée sur x=11 ou x=35.
+ const dx=sx+doorColumn*32+4;
+ box(g,dx-3,sy+83,30,42,'#604334');
+ box(g,dx,sy+87,24,38,'#b38359');
+ box(g,dx+4,sy+91,16,34,'#7a4e40');
+ box(g,dx+19,sy+105,3,3,'#efca83');
+ box(g,dx-6,sy+124,36,4,'#bdafa0');
+ // Jardinières basses pour une façade vivante.
+ for(const ax of [sx+10,sx+140]){
+  box(g,ax,sy+112,14,11,'#805a42');
+  box(g,ax+1,sy+108,12,5,'#4d9561');
+  wildflower(g,ax+7,sy+107,red?'#f0abc0':'#f8deb2');
  }
 }
 export function renderTerrain(g,width,height,tileAt,noise){
@@ -231,8 +230,8 @@ export function renderTerrain(g,width,height,tileAt,noise){
   if(['tree','void'].includes(tileAt(x,y)))tree(g,x,y,noise);
  }
  // Les maisons couvrent les tuiles techniques roof / wall / door.
- house(g,8,7,'roof',3,noise);
- house(g,31,7,'roof2',4,noise);
+ house(g,9,9,'roof',2,noise);
+ house(g,33,9,'roof2',2,noise);
 }
 export function drawWaterAnimation(ctx,camX,camY,now,tileAt,width,height){
  // Quelques reflets animés, sans allocation d'image par frame.
