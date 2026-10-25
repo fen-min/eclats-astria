@@ -13,6 +13,18 @@ const choose=(noise,x,y,seed,n)=>Math.floor(noise(x,y,seed)*n);
 // 8 variantes de prairie + 8 variantes de terre, extraites de la proposition n°2.
 // Elles sont affichées à leur taille native de 32 px, sans lissage.
 export const GROUND_ATLAS=Object.freeze({width:256,height:64,columns:8,variants:8,tile:32});
+// Herbe plus douce validée : 8 variantes de 32 × 32, sans séparateurs.
+// Le chemin et l'étang conservent leurs sprites actuels.
+export const SOFT_GRASS_ATLAS=Object.freeze({width:256,height:32,variants:8,tile:32});
+export function softGrassFrame(x,y,noise){
+ // Les variantes calmes dominent : les brins plus foncés sont exceptionnels.
+ const choice=noise(x,y,512);
+ if(choice<0.30)return 0;
+ if(choice<0.52)return 3;
+ if(choice<0.74)return 4;
+ if(choice<0.88)return 6;
+ return [1,2,5,7][Math.floor(noise(x,y,513)*4)];
+}
 function atlasGround(g,img,px,py,type,noise,x,y){
  const variant=choose(noise,x,y,205,GROUND_ATLAS.variants);
  const sy=(type==='path'||type==='door')?32:0;
@@ -69,10 +81,16 @@ function atlasWater(g,img,x,y,tileAt,noise){
  const {col,row}=waterFrame(x,y,tileAt,noise);
  g.drawImage(img,col*32,row*32,32,32,x*32,y*32,32,32);
 }
-function ground(g,x,y,type,noise,tileAt,groundAtlas=null,waterAtlas=null){
+function ground(g,x,y,type,noise,tileAt,groundAtlas=null,waterAtlas=null,softGrassAtlas=null){
  const px=x*32, py=y*32, n=choose(noise,x,y,5,4);
  if(type==='water'&&waterAtlas){
    atlasWater(g,waterAtlas,x,y,tileAt,noise);
+   return;
+ }
+ // Remplacement uniquement de la prairie ; chemins, portes et eau préservés.
+ if(softGrassAtlas&&type!=='water'&&type!=='path'&&type!=='door'){
+   const frame=softGrassFrame(x,y,noise);
+   g.drawImage(softGrassAtlas,frame*32,0,32,32,px,py,32,32);
    return;
  }
  if(groundAtlas&&type!=='water'){
@@ -177,19 +195,20 @@ function atlasGrass(g,atlas,x,y,noise){
 }
 function grasses(g,x,y,type,noise,atlas=null){
  const px=x*32,py=y*32;
- if(type==='tallgrass'){
+ if(type==='tallgrass'&&noise(x,y,432)<.47){
   if(atlas)atlasGrass(g,atlas,x,y,noise);
   else drawReeds(g,px,py,noise,x,y);
  }
  if(type==='flower'){
-  if(noise(x,y,57)<.25){
+  // Petites fleurs ponctuelles : la majorité des cases reste verte.
+  const decoration=noise(x,y,57);
+  if(decoration<.08){
    shrub(g,px,py,choose(noise,x,y,58,2));
-  }else{
-   wildflower(g,px+11,py+14,noise(x,y,37)<.5?'#f0d4e3':'#fff0ba');
-   wildflower(g,px+23,py+19,noise(x,y,52)<.5?'#f8b4b9':'#f7e8ad');
+  }else if(decoration<.34){
+   wildflower(g,px+17,py+17,noise(x,y,37)<.5?'#f0d4e3':'#fff0ba');
   }
  }
- if(type==='grass'&&noise(x,y,105)<.085){
+ if(type==='grass'&&noise(x,y,105)<.014){
   box(g,px+9,py+15,8,4,'#6daf70');
   box(g,px+10,py+11,2,8,'#447e52');
   box(g,px+19,py+14,3,5,'#5b945c');
@@ -335,7 +354,7 @@ export function drawWindFoliage(ctx,camX,camY,now,tileAt,noise,atlas,width,heigh
  const y1=Math.min(height,Math.ceil((camY+ctx.canvas.height)/32)+5);
  // Hautes herbes derrière les arbres, comme dans le rendu original.
  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
-  if(tileAt(x,y)!=='tallgrass')continue;
+  if(tileAt(x,y)!=='tallgrass'||noise(x,y,432)>=.47)continue;
   const frame=choose(noise,x,y,47,4),cx=(x+.5)*32,foot=(y+1)*32;
   drawWindSlices(ctx,atlas,frame*80,90,80,55,
    Math.round(cx-44-camX),Math.round(foot-61-camY),88,61,
@@ -360,11 +379,11 @@ export function renderHouses(g,noise,houses=null){
   house(g,33,9,'roof2',2,noise);
  }
 }
-export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null,waterAtlas=null,mode='all'){
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null,waterAtlas=null,mode='all',softGrassAtlas=null){
  g.imageSmoothingEnabled=false;
  if(mode==='houses'){renderHouses(g,noise,houses);return;}
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas,waterAtlas);
+  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas,waterAtlas,softGrassAtlas);
  }
  // Avant les grands objets, poser les fleurs et buissons.
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){

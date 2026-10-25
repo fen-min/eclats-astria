@@ -1,6 +1,6 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js?v=0.1.18';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
-import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.20';
+import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
@@ -32,14 +32,15 @@ const foliageAtlas=new Image();
 const housesAtlas=new Image();
 const groundAtlas=new Image();
 const waterAtlas=new Image();
-let foliageReady=false, housesReady=false, groundReady=false, waterReady=false;
+const softGrassAtlas=new Image();
+let foliageReady=false, housesReady=false, groundReady=false, waterReady=false, softGrassReady=false;
 function redrawTerrain(){
  g.clearRect(0,0,world.width,world.height);
  hg.clearRect(0,0,world.width,world.height);
  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,
   foliageReady?foliageAtlas:null,housesReady?housesAtlas:null,
   groundReady?groundAtlas:null,waterReady?waterAtlas:null,
-  foliageReady?'background':'all');
+  foliageReady?'background':'all',softGrassReady?softGrassAtlas:null);
  if(foliageReady)renderHouses(hg,noise,housesReady?housesAtlas:null);
 }
 redrawTerrain();
@@ -61,6 +62,13 @@ groundAtlas.onload=()=>{
  }else console.warn('Planche des textures de prairie aux dimensions inattendues.');
 };
 groundAtlas.onerror=()=>console.warn('Textures de prairie indisponibles, anciens sols conservés.');
+softGrassAtlas.onload=()=>{
+ if(softGrassAtlas.naturalWidth===256&&softGrassAtlas.naturalHeight===32){
+  softGrassReady=true;redrawTerrain();
+ }else console.warn('Dimensions inattendues des nouvelles tuiles d’herbe.');
+};
+softGrassAtlas.onerror=()=>console.warn('Herbe douce indisponible, texture précédente conservée.');
+softGrassAtlas.src=new URL('./assets/soft-grass-atlas.png?v=0.1.21',import.meta.url).href;
 waterAtlas.onload=()=>{
  if(waterAtlas.naturalWidth===128&&waterAtlas.naturalHeight===128){
   waterReady=true;redrawTerrain();

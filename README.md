@@ -99,3 +99,7 @@ L'ancienne planche contenait des marges crème autour des images, ce qui provoqu
 ## Vent dans les arbres et hautes herbes — version 0.1.20
 
 Les quatre arbres et les quatre variantes de hautes herbes utilisent désormais un **vent léger non synchronisé** : déplacement horizontal de 1 à 2 px des parties hautes, sommet plus mobile que la base. Les troncs et le pied des touffes restent fixes, les pixels ne sont pas lissés. Les sprites et les maisons ne sont pas remplacés. Le terrain et les maisons restent mis en cache sur des calques statiques ; seul le feuillage visible est redessiné à chaque image. Les collisions n'en dépendent pas : on ne peut pas traverser les arbres. Les anciennes images servent de repli tant que l'atlas de végétation charge.
+
+## Prairie apaisée — version 0.1.21
+
+La prairie utilise les **8 nouvelles tuiles vertes de 32 × 32 pixels** sélectionnées par l'utilisateur (`soft-grass-atlas.png`, planche compacte 256 × 32). La texture se rapproche d'un vert uni avec quelques nuances et rares détails. Les variantes sans brins sont privilégiées. Pour éviter de surcharger le décor, l'affichage des fleurs, petits brins supplémentaires et hautes herbes devient moins fréquent, mais la logique des collisions et de la carte ne change pas. Les chemins de terre, l'étang, les arbres, les maisons, les sauvegardes et l'animation du vent restent conservés. Le sprite se charge indépendamment et la texture précédente sert de repli.
