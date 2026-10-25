@@ -2,21 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {SPAWN,walkable} from '../site/world.js';
-import {COMPANIONS,CAT_FRAME,CAT_ROWS,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection,catIdleFrame} from '../site/companions.js';
+import {COMPANIONS,CAT_FRAME,CAT_ROWS,MIAW_WALK_FRAME,MIAW_MEOW_FRAME,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection,catIdleFrame} from '../site/companions.js';
 
 test('the starter creature is original, recruitable, smaller than the hero and supports four directions',()=>{
  assert.equal(COMPANIONS.length,1);
- assert.equal(companionById('chat-rouge').name,'Chat rouge tigré');
+ assert.equal(companionById('chat-rouge').name,'Miaw');
  assert.equal(companionById('fake'),null);
+ assert.equal(companionById('miaw').name,'Miaw');
+ assert.equal(COMPANIONS[0].id,'miaw');
  assert.deepEqual(CAT_FRAME,{width:52,height:48,frames:4,rows:4});
  assert.equal(CAT_FRAME.height<68,true);
  assert.deepEqual(CAT_ROWS,{down:0,up:1,left:2,right:3});
- const images=['docs','site'].map(dir=>readFileSync(new URL('../'+dir+'/assets/chat-rouge-idle.png',import.meta.url)));
- assert.deepEqual(images[0],images[1]);
- assert.equal(images[0].subarray(0,8).toString('hex'),'89504e470d0a1a0a');
- assert.equal(images[0].readUInt32BE(16),208);
- assert.equal(images[0].readUInt32BE(20),192);
- assert.ok(images[0].length>4000);
+ for(const [filename,layout] of [
+  ['miaw-idle.png',CAT_FRAME],['miaw-walk.png',MIAW_WALK_FRAME],['miaw-meow.png',MIAW_MEOW_FRAME]
+ ]){
+  const images=['docs','site'].map(dir=>readFileSync(new URL('../'+dir+'/assets/'+filename,import.meta.url)));
+  assert.deepEqual(images[0],images[1]);
+  assert.equal(images[0].subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(images[0].readUInt32BE(16),layout.width*layout.frames);
+  assert.equal(images[0].readUInt32BE(20),layout.height*layout.rows);
+  assert.ok(images[0].length>2000);
+ }
 });
 test('a creature follows the traversed path, rather than clipping through obstacles',()=>{
  const hero={...SPAWN,dir:'down'};
@@ -43,10 +49,24 @@ test('both browser builds provide Maria recruitment, persistence and follower dr
   assert.match(g,/followerOnHeroStep\(now\)/);
   assert.match(g,/drawCompanion\(px,py,now\)/);
   assert.match(g,/renderCompanionChoices\(/);
-  assert.match(g,/assets\/chat-rouge-idle\.png\?v=0\.1\.22/);
+  assert.match(g,/assets\/miaw-idle\.png\?v=0\.1\.23/);
+  assert.match(g,/assets\/miaw-meow\.png\?v=0\.1\.23/);
+  assert.match(g,/assets\/miaw-walk\.png\?v=0\.1\.23/);
+  assert.match(g,/miawAnimation\(now,follower\.dir,walking/);
   assert.match(h,/id="companion-list"/);
   assert.match(h,/id="companion-status"/);
   assert.match(h,/PARLER À MARIA/);
-  assert.match(h,/game\.js\?v=0\.1\.22/);
+  assert.match(h,/game\.js\?v=0\.1\.23/);
  }
+});
+
+test('Miaw has a front-only idle meow and distinct sideways walk frames',()=>{
+ assert.equal(miawAnimation(4000,'down',false,4200).kind,'meow');
+ assert.equal(miawAnimation(4070,'down',false,4300).frame,2);
+ for(const dir of ['up','left','right'])
+  assert.equal(miawAnimation(4200,dir,false,4200).kind,'idle');
+ assert.equal(miawAnimation(4200,'down',true,4200).kind,'idle');
+ assert.deepEqual(miawAnimation(850,'left',true),{kind:'walk',row:0,frame:2});
+ assert.deepEqual(miawAnimation(850,'right',true),{kind:'walk',row:1,frame:2});
+ assert.equal(miawAnimation(900,'down',false,100).kind,'idle');
 });

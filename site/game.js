@@ -2,7 +2,7 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
-import {COMPANIONS,CAT_FRAME,CAT_ROWS,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection,catIdleFrame} from './companions.js?v=0.1.22';
+import {COMPANIONS,CAT_FRAME,CAT_ROWS,MIAW_WALK_FRAME,MIAW_MEOW_FRAME,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.23';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -18,17 +18,20 @@ let follower=null,footsteps=[{x:player.x,y:player.y}];
 const companionStatus=document.getElementById('companion-status');
 const companionList=document.getElementById('companion-list');
 const dialogTitle=document.getElementById('dialog-title');
-const catAtlas=new Image();
-let catReady=false;
-catAtlas.onload=()=>{catReady=catAtlas.naturalWidth===CAT_FRAME.width*CAT_FRAME.frames && catAtlas.naturalHeight===CAT_FRAME.height*CAT_FRAME.rows;};
-catAtlas.onerror=()=>{catReady=false;};
-catAtlas.src=new URL('./assets/chat-rouge-idle.png?v=0.1.22',import.meta.url).href;
+const miawAtlases={idle:new Image(),walk:new Image(),meow:new Image()};
+const miawReady={idle:false,walk:false,meow:false};
+for(const [kind,frame] of [['idle',CAT_FRAME],['walk',MIAW_WALK_FRAME],['meow',MIAW_MEOW_FRAME]]){
+ const image=miawAtlases[kind];
+ image.onload=()=>{miawReady[kind]=image.naturalWidth===frame.width*frame.frames&&image.naturalHeight===frame.height*frame.rows;};
+ image.onerror=()=>{miawReady[kind]=false;};
+ image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.23',import.meta.url).href;
+}
 function resetFollower(){
  footsteps=[{x:player.x,y:player.y}];
  if(!selectedCompanion){follower=null;return;}
  const spot=initialCompanionPosition(player,walkable);
  follower={x:spot.x,y:spot.y,fromX:spot.x,fromY:spot.y,toX:spot.x,toY:spot.y,
-           dir:player.dir,stepStartedAt:-Infinity};
+           dir:player.dir,stepStartedAt:-Infinity,lastMoveAt:performance.now()};
 }
 resetFollower();
 function updateCompanionUI(){
@@ -198,19 +201,22 @@ function drawHero(px,py,dir,moving,now){
 function drawCompanion(px,py,now){
  if(!selectedCompanion||!follower)return;
  ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,11,3,0,0,Math.PI*2);ctx.fill();
- if(catReady){
-  const row=CAT_ROWS[follower.dir]??0;
-  const frame=catIdleFrame(now);
+ const walking=Math.abs(follower.fromX-follower.toX)+Math.abs(follower.fromY-follower.toY)>.01
+   && now-follower.stepStartedAt<STEP_DURATION_MS;
+ const pose=miawAnimation(now,follower.dir,walking,Math.max(0,now-follower.lastMoveAt));
+ const kind=miawReady[pose.kind]?pose.kind:'idle';
+ if(miawReady[kind]){
+  const frame=kind==='walk'?MIAW_WALK_FRAME:kind==='meow'?MIAW_MEOW_FRAME:CAT_FRAME;
+  const image=miawAtlases[kind];
+  const row=kind===pose.kind?pose.row:(CAT_ROWS[follower.dir]??0);
+  const col=kind===pose.kind?pose.frame:0;
   ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(catAtlas,frame*CAT_FRAME.width,row*CAT_FRAME.height,
-    CAT_FRAME.width,CAT_FRAME.height,
-    Math.round(px-CAT_FRAME.width/2),Math.round(py-CAT_FRAME.height+1),
-    CAT_FRAME.width,CAT_FRAME.height);
+  ctx.drawImage(image,col*frame.width,row*frame.height,frame.width,frame.height,
+   Math.round(px-frame.width/2),Math.round(py-frame.height+1),frame.width,frame.height);
  }else{
-  // Petit compagnon dessiné en secours pendant le chargement.
-  rect(ctx,px-9,py-18,18,16,'#c94b35');
-  rect(ctx,px-7,py-23,5,7,'#252128');
-  rect(ctx,px+2,py-23,5,7,'#252128');
+  rect(ctx,px-9,py-18,18,16,'#e15c25');
+  rect(ctx,px-7,py-23,5,7,'#30212c');
+  rect(ctx,px+2,py-23,5,7,'#30212c');
   rect(ctx,px-4,py-13,3,3,'#f1bd76');
   rect(ctx,px+2,py-13,3,3,'#f1bd76');
  }
@@ -225,6 +231,7 @@ function followerOnHeroStep(now){
  follower.dir=facingDirection(pos,target,follower.dir);
  follower.toX=target.x;follower.toY=target.y;
  follower.stepStartedAt=now;
+ follower.lastMoveAt=now;
 }
 function drawMira(px,py,now){
  const bob=Math.sin(now/400)*1.5,x=Math.round(px),y=Math.round(py+bob);

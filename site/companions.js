@@ -1,10 +1,28 @@
 // Créatures recrutables et comportement de suivi, indépendants du rendu.
 export const COMPANIONS=Object.freeze([
-  Object.freeze({id:'chat-rouge',name:'Chat rouge tigré',role:'DPS',sprite:'chat-rouge-idle.png'})
+  Object.freeze({id:'miaw',name:'Miaw',role:'DPS',sprite:'miaw-idle.png',description:'Chaton démon orange et noir'})
 ]);
 export const CAT_FRAME=Object.freeze({width:52,height:48,frames:4,rows:4});
 export const CAT_ROWS=Object.freeze({down:0,up:1,left:2,right:3});
-export function companionById(id){return COMPANIONS.find(c=>c.id===id)||null;}
+export const MIAW_WALK_FRAME=Object.freeze({width:52,height:48,frames:8,rows:2});
+export const MIAW_MEOW_FRAME=Object.freeze({width:52,height:48,frames:5,rows:1});
+export function companionById(id){
+  // Le compagnon reste choisi sur les anciennes sauvegardes.
+  return COMPANIONS.find(c=>c.id===(id==='chat-rouge'?'miaw':id))||null;
+}
+export function miawAnimation(now,dir,moving,idleFor=0){
+ if(moving){
+  if(dir==='left'||dir==='right')
+   return {kind:'walk',row:dir==='left'?0:1,frame:Math.floor(now/85)%8};
+  return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
+ }
+ if(dir==='down'&&idleFor>=3500){
+  const cycle=idleFor%9200;
+  if(cycle>=3500&&cycle<5250)
+   return {kind:'meow',row:0,frame:Math.min(4,Math.floor((cycle-3500)/350))};
+ }
+ return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
+}
 export function initialCompanionPosition(hero,canWalk){
  const offsets={down:[0,-1],up:[0,1],left:[1,0],right:[-1,0]};
  const options=[offsets[hero.dir]||offsets.down,offsets.down,offsets.left,offsets.right,offsets.up];

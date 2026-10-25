@@ -109,3 +109,12 @@ La prairie utilise les **8 nouvelles tuiles vertes de 32 × 32 pixels** sélecti
 Maria (ancien nom affiché : Mira, coordonnées MIRA conservées dans le moteur) propose désormais une liste extensible de créatures originales. Le premier choix est le **Chat rouge tigré**, rôle de combat provisoire DPS. Son atlas transparent `assets/chat-rouge-idle.png` regroupe **16 sprites** : 4 directions × 4 poses de repos, de 52 × 48 px chacune. Il est plus petit que le héros et anime sa queue/respiration pendant l'exploration.
 
 Parler à Maria via E ou PARLER ouvre une liste ; choisir une créature la recrute. Le compagnon suit les pas du héros avec un léger retard, change d'orientation, apparaît sur la minimap et est mémorisé par `localStorage` via `companionId`. Lorsqu'on retourne à la liste des jeux, le compagnon est conservé. La liste repose sur `companions.js` pour faciliter les prochains ajouts. Aucune fonctionnalité de combat n'est encore activée ; les rôles DPS/Tank/Healer et boss roguelike sont prévus ultérieurement.
+
+## Miaw — nouveau compagnon démon kawaii (0.1.23)
+
+L'ancien « Chat rouge tigré » est remplacé par **Miaw**, un chaton tigré orange/noir doté de petites cornes de démon. Les trois atlas PNG transparents de la planche artistique validée font chacun des cellules de 52 × 48 pixels :
+- `assets/miaw-idle.png` : 4 directions et 4 poses de repos par direction.
+- `assets/miaw-walk.png` : 8 images pour marcher à gauche et 8 à droite. En marche vers le haut/bas, les sprites correspondants de repos sont utilisés.
+- `assets/miaw-meow.png` : 5 images de la séquence face seulement, tête qui se relève, bouche ouverte, regard à gauche et retour au repos. Elle se déclenche périodiquement après au moins 3,5 secondes d'immobilité de face.
+
+Maria propose Miaw dans sa liste. Les anciennes sauvegardes ayant sélectionné « chat-rouge » retrouvent automatiquement Miaw. Son suivi, les collisions et la position du héros ne sont pas modifiés.

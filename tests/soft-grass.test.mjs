@@ -50,6 +50,6 @@ test('plain grass variants are dominant and the original wind remains active',()
   assert.match(code,/soft-grass-atlas\.png\?v=0\.1\.21/);
   assert.match(code,/softGrassReady\?softGrassAtlas:null/);
   assert.match(code,/drawWindFoliage\(/);
-  assert.match(html,/game\.js\?v=0\.1\.22/);
+  assert.match(html,/game\.js\?v=0\.1\.23/);
  }
 });

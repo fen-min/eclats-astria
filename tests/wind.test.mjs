@@ -61,6 +61,6 @@ test('game reloads animated foliage and retains the original walk cycle',()=>{
   assert.match(game,/renderHouses\(hg,noise,housesReady\?housesAtlas:null\)/);
   assert.match(game,/hero-walk-8\.png/);
   assert.match(game,/hero-idle-4\.png/);
-  assert.match(html,/game\.js\?v=0\.1\.22/);
+  assert.match(html,/game\.js\?v=0\.1\.23/);
  }
 });
