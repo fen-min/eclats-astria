@@ -126,3 +126,29 @@ L'animation de miaulement de Miaw a été remplacée par **la nouvelle planche v
 ## Miaw — marche dans les quatre directions (version 0.1.25)
 
 Nouvel atlas de marche `assets/miaw-walk.png` tiré de la spritesheet 4 × 4 approuvée : **16 poses, 4 directions (face, dos, gauche, droite), 4 images par direction**, cases transparentes **64 × 64 px**, taille totale 256 × 256. Les couleurs sont quantifiées pour un rendu net de type pixel art sans lissage. La marche est jouée à **8 FPS**, y compris de face et de dos, et le sprite est affiché à une taille constante de 48 × 48 px dans la scène. Le repos et le miaulement de face restent inchangés. Les chemins, les collisions, le recrutement auprès de Maria et les sauvegardes restent identiques. Copie des modifications dans docs/ et site/.
+
+## Miaw — nouvelles animations (0.1.26)
+
+La planche envoyée pour Miaw remplace les anciennes animations idle / walk / meow. Les **13 séquences**
+de la planche finale comprennent : repos (4), marche (8), saut (6), dégâts (4), K.O. (5),
+attaque normale (6), attaque spéciale (8), griffes/morsure (6), amélioration (6),
+intimidation (4), esquive/fouille (8), sommeil (4) et feu élémentaire (8).
+Il y a **77 images à jouer**, mais la bande « griffes/morsure » de l'illustration fournie
+contient cinq poses distinctes : la dernière est réutilisée pour une sixième étape.
+
+**Format** : l'unique planche PNG transparente (984 × 1599) est distribuée dans
+`assets/miaw-actions.base64` comme image PNG encodée en base64. Le navigateur la décode
+avant de l'afficher sur Canvas (sans lissage). Les anciennes ressources
+`miaw-idle.png`, `miaw-walk.png` et `miaw-meow.png` ont été retirées des deux versions
+`docs/` et `site/`. Pour conserver les effets de feu, la séquence élémentaire est
+superposée au personnage. L'utilisateur peut choisir et lancer chaque animation avec le panneau
+« Animations de Miaw » après avoir recruté Miaw auprès de Maria.
+
+**Limite artistique de cette planche** : les poses sont dessinées exclusivement en profil droit.
+Le moteur les retourne pour les mouvements vers la gauche ; il ne dispose pas encore de vues
+face/dos sur cette nouvelle planche. **Limite gameplay** : les attaques, effets, K.O. et esquives
+sont aujourd'hui des animations de prévisualisation et ne produisent pas encore de dégâts ni
+de mécaniques de combat. Le futur combat roguelike reste à développer.
+
+La sauvegarde, le recrutement, la mini-carte, la progression du héros et les collisions
+sont préservés.
