@@ -40,13 +40,13 @@ foliageAtlas.onload=()=>{
 };
 foliageAtlas.onerror=()=>console.warn('Décors de secours affichés : feuillages indisponibles.');
 housesAtlas.onload=()=>{
- if(housesAtlas.naturalWidth===256&&housesAtlas.naturalHeight===120){
+ if(housesAtlas.naturalWidth===384&&housesAtlas.naturalHeight===176){
   housesReady=true;redrawTerrain();
  }else console.warn('Planche de maisons aux dimensions inattendues.');
 };
 housesAtlas.onerror=()=>console.warn('Décors de secours affichés : maisons indisponibles.');
 foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
-housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.11',import.meta.url).href;
+housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.12',import.meta.url).href;
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}
 function drawHeroFallback(px,py,dir,moving,now){
  const x=Math.round(px-16),y=Math.round(py-69);

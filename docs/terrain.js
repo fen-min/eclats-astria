@@ -234,12 +234,13 @@ function house(g,x,y,roofVariant,doorColumn,noise){
  }
 }
 // Deux cottages RPG transparents (gauche : vert, droite : rouge).
-export const HOUSES_ATLAS=Object.freeze({width:256,height:120,columns:2,frameWidth:128,frameHeight:120});
+export const HOUSES_ATLAS=Object.freeze({width:384,height:176,columns:2,frameWidth:192,frameHeight:176});
 function atlasHouse(g,atlas,x,y,frame){
  const centerX=(x+2.5)*32;
  const bottomY=(y+4)*32;
  // La porte tombe au centre de la case d'entrée existante (x11 ou x35).
- g.drawImage(atlas,frame*128,0,128,120,Math.round(centerX-96),Math.round(bottomY-176),192,176);
+ // Sprite source affiché pixel pour pixel : aucun agrandissement destructeur.
+ g.drawImage(atlas,frame*192,0,192,176,Math.round(centerX-96),Math.round(bottomY-176),192,176);
 }
 export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null){
  g.imageSmoothingEnabled=false;

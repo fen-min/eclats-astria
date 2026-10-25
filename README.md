@@ -61,3 +61,7 @@ Les quatre nouveaux arbres et les quatre variantes de hautes herbes ont été d�
 ## Maisons vertes et rouges (version 0.1.11)
 
 Les deux maisons du village utilisent désormais les sprites approuvés : cottage au toit **vert** à l'ouest (entrée en 11,12) et cottage au toit **rouge** à l'est (entrée en 35,12). L'atlas transparent `assets/houses-atlas.png` contient les deux maisons (2 cellules de 128 × 120 pixels), affichées en pixel art sans lissage. Les deux ressources (feuillage et maisons) se chargent séparément puis déclenchent un nouveau rendu de la carte effacée, pour éviter les anciens décors visibles derrière les transparences. Les collisions, les sauvegardes, le menu des jeux et les animations du personnage restent inchangés.
+
+## Correction de la netteté et des couleurs (0.1.12)
+
+Les deux maisons avaient été réduites à un atlas 256 × 120 (une cellule de 128 × 120 par maison), puis réagrandies en 192 × 176, avec seulement 32 couleurs. La qualité visuelle était dégradée. L'atlas a été reconstruit à partir de la planche illustrée d'origine, avec 96 couleurs et des cellules source de **192 × 176 pixels**, rendues à leur taille native, sans interpolation ni agrandissement. Le détourage a aussi été nettoyé. Les collisions et les entrées existantes restent inchangées. La végétation, le personnage et les autres éléments conservent leur esthétique pixel art existante ; leur homogénéisation graphique peut être poursuivie indépendamment.
