@@ -1,9 +1,9 @@
-// Décors originaux d'Éclats d'Astria : pixel art 32 px, arbres plus grands et clairsemés version 0.1.8.
+// Décors originaux d'Éclats d'Astria : pixel art 32 px, sprites originaux arbres et herbes validés version 0.1.10.
 const TILE_SIZE=32;
 const C={
-  grass:['#659c76','#6da680','#75ae81','#5e966f'],
-  blades:['#4f8b60','#40865e','#98c483','#3e7856'],
-  earth:['#d7c29a','#cbb58d','#decaa2','#c1a77c'],
+  grass:['#4d8d55','#478950','#52935a','#44874e'],
+  blades:['#357645','#367b47','#81b979','#326f43'],
+  earth:['#ac8d64','#a68760','#b59a6e','#9d7f58'],
   earthShade:'#ac9875',
   water:['#30778e','#387f95','#438fa2','#286d87'],
   timber:'#765542',timberDark:'#49382f',
@@ -100,9 +100,25 @@ function drawReeds(g,px,py,noise,x,y){
   }
  }
 }
-function grasses(g,x,y,type,noise){
+// Planche 320x145 : 4 arbres (80x90), 4 herbes (80x55).
+// Les images se placent par le pied afin de suivre les cases de collision.
+export const FOLIAGE_ATLAS=Object.freeze({width:320,height:145,columns:4,frameWidth:80,treeHeight:90,grassHeight:55});
+function atlasTree(g,atlas,x,y,noise){
+ const frame=choose(noise,x,y,46,4);
+ const centerX=(x+.5)*32,footY=(y+1)*32;
+ g.drawImage(atlas,frame*80,0,80,90,Math.round(centerX-56),Math.round(footY-126),112,126);
+}
+function atlasGrass(g,atlas,x,y,noise){
+ const frame=choose(noise,x,y,47,4);
+ const centerX=(x+.5)*32,footY=(y+1)*32;
+ g.drawImage(atlas,frame*80,90,80,55,Math.round(centerX-44),Math.round(footY-61),88,61);
+}
+function grasses(g,x,y,type,noise,atlas=null){
  const px=x*32,py=y*32;
- if(type==='tallgrass')drawReeds(g,px,py,noise,x,y);
+ if(type==='tallgrass'){
+  if(atlas)atlasGrass(g,atlas,x,y,noise);
+  else drawReeds(g,px,py,noise,x,y);
+ }
  if(type==='flower'){
   if(noise(x,y,57)<.25){
    shrub(g,px,py,choose(noise,x,y,58,2));
@@ -217,7 +233,7 @@ function house(g,x,y,roofVariant,doorColumn,noise){
   wildflower(g,ax+7,sy+107,red?'#f0abc0':'#f8deb2');
  }
 }
-export function renderTerrain(g,width,height,tileAt,noise){
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null){
  g.imageSmoothingEnabled=false;
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
   ground(g,x,y,tileAt(x,y),noise,tileAt);
@@ -225,11 +241,14 @@ export function renderTerrain(g,width,height,tileAt,noise){
  // Avant les grands objets, poser les fleurs et buissons.
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
   const type=tileAt(x,y);
-  if(['grass','tallgrass','flower'].includes(type))grasses(g,x,y,type,noise);
+  if(['grass','tallgrass','flower'].includes(type))grasses(g,x,y,type,noise,atlas);
  }
  // Arbres en profondeur, de la rangée du fond vers celle de l'avant.
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  if(['tree','void'].includes(tileAt(x,y)))tree(g,x,y,noise);
+  if(['tree','void'].includes(tileAt(x,y))){
+   if(atlas)atlasTree(g,atlas,x,y,noise);
+   else tree(g,x,y,noise);
+  }
  }
  // Les maisons couvrent les tuiles techniques roof / wall / door.
  house(g,9,9,'roof',2,noise);

@@ -53,3 +53,7 @@ La page d'accueil affiche désormais un **lanceur multi-jeux** : Éclats d'Astri
 La liste des jeux se trouve dans `site/hub.js` et `docs/hub.js`. Pour ajouter un nouveau jeu : créer un dossier de jeu indépendant, ajouter une entrée `status: 'available'` avec son chemin `href` dans `GAMES` et la carte apparaît automatiquement dans le menu. Les jeux en cours de préparation utilisent `status: 'planned'` et ne lancent rien.
 
 Les versions `site/` et `docs/` doivent rester identiques.
+
+## Arbres et herbes illustrés (0.1.10)
+
+Les quatre nouveaux arbres et les quatre variantes de hautes herbes ont été découpés depuis la planche originale validée. L'atlas `assets/foliage-atlas.png` est chargé dans le navigateur (rendu pixelisé sans lissage). Le moteur affiche un décor vectoriel de secours jusqu'au chargement, puis reconstruit la carte avec la planche. La palette des sols est harmonisée avec le vert des nouveaux sprites. La densité et les collisions de la carte restent inchangées. Le menu multi-jeux et la sauvegarde du personnage sont conservés.

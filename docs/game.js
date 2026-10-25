@@ -22,6 +22,18 @@ world.width=WIDTH*TILE;
 world.height=HEIGHT*TILE;
 const g=world.getContext('2d');
 renderTerrain(g,WIDTH,HEIGHT,tileAt,noise);
+// Pendant le chargement, l'ancien décor sert de secours ;
+// lorsque l'atlas est prêt, la carte est redessinée sans changer les collisions.
+const foliageAtlas=new Image();
+foliageAtlas.onload=()=>{
+ if(foliageAtlas.naturalWidth===320&&foliageAtlas.naturalHeight===145){
+  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,foliageAtlas);
+ }else{
+  console.warn('Planche de végétation aux dimensions inattendues.');
+ }
+};
+foliageAtlas.onerror=()=>console.warn('Décors de secours affichés : atlas indisponible.');
+foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}
 function drawHeroFallback(px,py,dir,moving,now){
  const x=Math.round(px-16),y=Math.round(py-69);
