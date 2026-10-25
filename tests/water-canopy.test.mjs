@@ -11,7 +11,17 @@ test('the approved pond atlas is installed in both published and local games',()
  assert.equal(files[0].subarray(0,8).toString('hex'),'89504e470d0a1a0a');
  assert.equal(files[0].readUInt32BE(16),128);
  assert.equal(files[0].readUInt32BE(20),128);
- assert.ok(files[0].length>3000);
+ assert.ok(files[0].length>2000);
+ // La planche doit être un atlas jointif, sans couleur crème provenant des
+ // anciennes marges de présentation entre les sprites.
+ const paletteAt=files[0].indexOf(Buffer.from('PLTE'));
+ assert.ok(paletteAt>0,'The rebuilt atlas should have an indexed color palette');
+ const paletteSize=files[0].readUInt32BE(paletteAt-4);
+ for(let i=0;i<paletteSize;i+=3){
+  const [r,g,b]=files[0].subarray(paletteAt+4+i,paletteAt+7+i);
+  assert.ok(!(r>244&&g>236&&b>218),
+    'The old beige/white sprite-sheet gutters must not appear in the pond');
+ }
 });
 test('shore and center water tiles use new water sprites and no smoothing',()=>{
  const atlas={};
@@ -63,8 +73,8 @@ test('new water and collisions are loaded in both websites',()=>{
  for(const dir of ['docs','site']){
   const js=readFileSync(new URL('../'+dir+'/game.js',import.meta.url),'utf8');
   const html=readFileSync(new URL('../'+dir+'/index.html',import.meta.url),'utf8');
-  assert.match(js,/water-atlas\.png\?v=0\.1\.18/);
+  assert.match(js,/water-atlas\.png\?v=0\.1\.19/);
   assert.match(js,/waterReady\?waterAtlas:null/);
-  assert.match(html,/game\.js\?v=0\.1\.18/);
+  assert.match(html,/game\.js\?v=0\.1\.19/);
  }
 });

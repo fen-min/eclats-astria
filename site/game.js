@@ -60,7 +60,7 @@ waterAtlas.onload=()=>{
  }else console.warn('Dimensions incorrectes de la planche d’eau.');
 };
 waterAtlas.onerror=()=>console.warn('Planche d’eau indisponible, dessin de secours conservé.');
-waterAtlas.src=new URL('./assets/water-atlas.png?v=0.1.18',import.meta.url).href;
+waterAtlas.src=new URL('./assets/water-atlas.png?v=0.1.19',import.meta.url).href;
 groundAtlas.src=new URL('./assets/ground-atlas.png?v=0.1.17',import.meta.url).href;
 foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
 housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.12',import.meta.url).href;

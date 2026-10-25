@@ -91,3 +91,7 @@ Le sol utilise maintenant la **deuxième proposition graphique validée**. Une p
 Le plan d'eau utilise désormais une planche de **16 tuiles originales en 32 × 32 px**, découpées depuis la proposition approuvée : berges, coins, eau libre, reflets et nénuphars. Les sprites sont sélectionnés suivant les cases voisines et affichés sans lissage. L'ancien dessin sert de secours si l'image manque.
 
 Les grands feuillages bloquent maintenant le personnage sur les cases qui se trouvent **jusqu'à deux cases au-dessus du tronc et une case de chaque côté**. Les chemins aménagés et les portes sont maintenus praticables pour préserver l'accès au village, aux maisons et à Mira. Le menu, les sauvegardes et les animations du héros sont inchangés.
+
+## Eau sans traits blancs — version 0.1.19
+
+L'ancienne planche contenait des marges crème autour des images, ce qui provoquait un quadrillage blanc sur toute la surface de l'étang. L'atlas a été **reconstruit en 16 véritables tuiles jointives de 32 × 32 pixels**, avec eau bleue, berges herbeuses/sableuses, reflets et quelques nénuphars. Aucune case blanche n'est conservée. Le jeu charge les nouvelles données avec le paramètre `v=0.1.19` pour éviter le cache du navigateur. Les collisions de l'eau et des arbres, les maisons, les commandes, le menu et la sauvegarde ne changent pas.
