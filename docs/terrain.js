@@ -304,30 +304,83 @@ function atlasHouse(g,atlas,x,y,frame){
  // Sprite source affiché pixel pour pixel : aucun agrandissement destructeur.
  g.drawImage(atlas,frame*192,0,192,176,Math.round(centerX-96),Math.round(bottomY-176),192,176);
 }
-export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null,waterAtlas=null){
- g.imageSmoothingEnabled=false;
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas,waterAtlas);
+// Vent discret et irrégulier : chaque touffe a son propre rythme.
+export const WIND=Object.freeze({treeAmplitude:2,grassAmplitude:2,periodMs:4200});
+export function windOffset(now,x,y,noise,kind='tree'){
+ const phase=(now*2*Math.PI/WIND.periodMs)+noise(x,y,411)*6.28318530718;
+ const breeze=Math.sin(phase)*0.78+Math.sin(phase*0.47+noise(x,y,412)*6.28318530718)*0.22;
+ return Math.round(breeze*(kind==='grass'?WIND.grassAmplitude:WIND.treeAmplitude));
+}
+function drawWindSlices(ctx,img,sourceX,sourceY,sourceWidth,sourceHeight,dx,dy,dw,dh,slices,sway){
+ // Une translation d'entiers garantit des pixels nets. Le haut se déplace
+ // davantage que la base ; le bas de l'arbre et de l'herbe reste immobile.
+ const sourceEnd=sourceY+sourceHeight;
+ for(let i=0;i<slices.length;i++){
+  const start=slices[i],end=i+1<slices.length?slices[i+1]:sourceHeight;
+  const ty=Math.round(start*dh/sourceHeight);
+  const bottom=Math.round(end*dh/sourceHeight);
+  const weight=i===0?1:i===1?0.65:i===2?0.32:0;
+  ctx.drawImage(img,sourceX,sourceY+start,sourceWidth,end-start,
+   dx+Math.round(sway*weight),dy+ty,dw,bottom-ty);
  }
- // Avant les grands objets, poser les fleurs et buissons.
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  const type=tileAt(x,y);
-  if(['grass','tallgrass','flower'].includes(type))grasses(g,x,y,type,noise,atlas);
+}
+export function drawWindFoliage(ctx,camX,camY,now,tileAt,noise,atlas,width,height){
+ if(!atlas)return;
+ ctx.imageSmoothingEnabled=false;
+ // Retenir les sprites proches de la caméra seulement (un arbre déborde
+ // d'environ deux cases de chaque côté et quatre vers le haut).
+ const x0=Math.max(0,Math.floor(camX/32)-3);
+ const x1=Math.min(width,Math.ceil((camX+ctx.canvas.width)/32)+3);
+ const y0=Math.max(0,Math.floor(camY/32)-2);
+ const y1=Math.min(height,Math.ceil((camY+ctx.canvas.height)/32)+5);
+ // Hautes herbes derrière les arbres, comme dans le rendu original.
+ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+  if(tileAt(x,y)!=='tallgrass')continue;
+  const frame=choose(noise,x,y,47,4),cx=(x+.5)*32,foot=(y+1)*32;
+  drawWindSlices(ctx,atlas,frame*80,90,80,55,
+   Math.round(cx-44-camX),Math.round(foot-61-camY),88,61,
+   [0,19,35,45],windOffset(now,x,y,noise,'grass'));
  }
- // Arbres en profondeur, de la rangée du fond vers celle de l'avant.
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  if(['tree','void'].includes(tileAt(x,y))){
-   if(atlas)atlasTree(g,atlas,x,y,noise);
-   else tree(g,x,y,noise);
-  }
+ // Couronnes en mouvement ; pieds et racines des arbres sans déplacement.
+ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+  if(!['tree','void'].includes(tileAt(x,y)))continue;
+  const frame=choose(noise,x,y,46,4),cx=(x+.5)*32,foot=(y+1)*32;
+  drawWindSlices(ctx,atlas,frame*80,0,80,90,
+   Math.round(cx-56-camX),Math.round(foot-126-camY),112,126,
+   [0,24,45,66],windOffset(now,x,y,noise,'tree'));
  }
- // Images validées par l'utilisateur ; tracés existants en secours si l'atlas tarde.
+}
+export function renderHouses(g,noise,houses=null){
+ // Les maisons sont placées après le feuillage pour respecter la profondeur.
  if(houses){
   atlasHouse(g,houses,9,9,0);
   atlasHouse(g,houses,33,9,1);
  }else{
   house(g,9,9,'roof',2,noise);
   house(g,33,9,'roof2',2,noise);
+ }
+}
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null,waterAtlas=null,mode='all'){
+ g.imageSmoothingEnabled=false;
+ if(mode==='houses'){renderHouses(g,noise,houses);return;}
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas,waterAtlas);
+ }
+ // Avant les grands objets, poser les fleurs et buissons.
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const type=tileAt(x,y);
+  if(['grass','tallgrass','flower'].includes(type)&&!(mode==='background'&&type==='tallgrass'))
+   grasses(g,x,y,type,noise,atlas);
+ }
+ // En mode animation, les grands végétaux sont dessinés à chaque image.
+ if(mode!=='background'){
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+   if(['tree','void'].includes(tileAt(x,y))){
+    if(atlas)atlasTree(g,atlas,x,y,noise);
+    else tree(g,x,y,noise);
+   }
+  }
+  renderHouses(g,noise,houses);
  }
 }
 export function drawWaterAnimation(ctx,camX,camY,now,tileAt,width,height){

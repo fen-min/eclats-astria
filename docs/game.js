@@ -1,6 +1,6 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js?v=0.1.18';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
-import {renderTerrain,drawWaterAnimation} from './terrain.js?v=0.1.18';
+import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.20';
 import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
@@ -21,6 +21,10 @@ const world=document.createElement('canvas');
 world.width=WIDTH*TILE;
 world.height=HEIGHT*TILE;
 const g=world.getContext('2d');
+const houseLayer=document.createElement('canvas');
+houseLayer.width=world.width;houseLayer.height=world.height;
+const hg=houseLayer.getContext('2d');
+hg.imageSmoothingEnabled=false;
 // Chaque ressource peut se charger indépendamment, sans perdre les autres décors.
 // Effacer avant chaque rendu évite que les anciennes maisons restent visibles
 // derrière les contours transparents des nouvelles.
@@ -31,9 +35,12 @@ const waterAtlas=new Image();
 let foliageReady=false, housesReady=false, groundReady=false, waterReady=false;
 function redrawTerrain(){
  g.clearRect(0,0,world.width,world.height);
+ hg.clearRect(0,0,world.width,world.height);
  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,
   foliageReady?foliageAtlas:null,housesReady?housesAtlas:null,
-  groundReady?groundAtlas:null,waterReady?waterAtlas:null);
+  groundReady?groundAtlas:null,waterReady?waterAtlas:null,
+  foliageReady?'background':'all');
+ if(foliageReady)renderHouses(hg,noise,housesReady?housesAtlas:null);
 }
 redrawTerrain();
 foliageAtlas.onload=()=>{
@@ -236,6 +243,10 @@ function animate(now){
  const cx=Math.round(camera.x),cy=Math.round(camera.y);
  ctx.drawImage(world,cx,cy,w,h,0,0,w,h);
  drawWaterAnimation(ctx,cx,cy,now,tileAt,WIDTH,HEIGHT);
+ if(foliageReady){
+  drawWindFoliage(ctx,cx,cy,now,tileAt,noise,foliageAtlas,WIDTH,HEIGHT);
+  ctx.drawImage(houseLayer,cx,cy,w,h,0,0,w,h);
+ }
  const heroX=Math.round((player.rx+.5)*TILE-cx),heroY=Math.round((player.ry+.8)*TILE-cy);
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
  if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,walking,now);}

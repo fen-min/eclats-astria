@@ -95,3 +95,7 @@ Les grands feuillages bloquent maintenant le personnage sur les cases qui se tro
 ## Eau sans traits blancs — version 0.1.19
 
 L'ancienne planche contenait des marges crème autour des images, ce qui provoquait un quadrillage blanc sur toute la surface de l'étang. L'atlas a été **reconstruit en 16 véritables tuiles jointives de 32 × 32 pixels**, avec eau bleue, berges herbeuses/sableuses, reflets et quelques nénuphars. Aucune case blanche n'est conservée. Le jeu charge les nouvelles données avec le paramètre `v=0.1.19` pour éviter le cache du navigateur. Les collisions de l'eau et des arbres, les maisons, les commandes, le menu et la sauvegarde ne changent pas.
+
+## Vent dans les arbres et hautes herbes — version 0.1.20
+
+Les quatre arbres et les quatre variantes de hautes herbes utilisent désormais un **vent léger non synchronisé** : déplacement horizontal de 1 à 2 px des parties hautes, sommet plus mobile que la base. Les troncs et le pied des touffes restent fixes, les pixels ne sont pas lissés. Les sprites et les maisons ne sont pas remplacés. Le terrain et les maisons restent mis en cache sur des calques statiques ; seul le feuillage visible est redessiné à chaque image. Les collisions n'en dépendent pas : on ne peut pas traverser les arbres. Les anciennes images servent de repli tant que l'atlas de végétation charge.
