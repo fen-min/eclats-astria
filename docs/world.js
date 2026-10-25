@@ -26,10 +26,11 @@ export function tileAt(x,y) {
   if((y>=15&&y<=17&&x>=2&&x<=43)||(x>=22&&x<=24&&y>=4&&y<=27)||
      (x>=11&&x<=12&&y>=12&&y<=17)||(x>=35&&x<=36&&y>=12&&y<=17)) return 'path';
   if(x>=17&&x<=29&&y>=11&&y<=19) return noise(x,y,5)<.1?'flower':'grass';
-  if(x<2||y<2||x>=WIDTH-2||y>=HEIGHT-2) return 'tree';
+  // Le bord conserve un rempart infranchissable d'une seule case.
+  if(x<1||y<1||x>=WIDTH-1||y>=HEIGHT-1) return 'tree';
   const forest=(x<8&&y<17)||(x>37&&y<14)||(x>35&&y>20)||(x<19&&y<7);
-  if(forest&&noise(x,y,31)<.54) return 'tree';
-  if(noise(x,y,34)<.055&&y>19&&x>15) return 'tree';
+  if(forest&&noise(x,y,31)<.30) return 'tree';
+  if(noise(x,y,34)<.035&&y>19&&x>15) return 'tree';
   if(noise(x,y,2)<.14) return 'flower';
   if(noise(x,y,3)<.20) return 'tallgrass';
   return 'grass';

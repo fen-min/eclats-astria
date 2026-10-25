@@ -18,7 +18,7 @@ test('the wider viewport and compact hero are included in both published and loc
   const game=readFileSync(new URL('../'+folder+'/game.js',import.meta.url),'utf8');
   const terrain=readFileSync(new URL('../'+folder+'/terrain.js',import.meta.url),'utf8');
   assert.match(html,/width="1008" height="648"/);
-  assert.match(game,/Math\.round\(-84\+pose\.bobY\),54,84/);
+  assert.match(game,/Math\.round\(-68\+pose\.bobY\),44,68/);
   assert.match(terrain,/house\(g,9,9,'roof',2,noise\)/);
  }
 });

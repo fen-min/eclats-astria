@@ -17,7 +17,7 @@ test('invalid moves and collisions cannot leave the map',()=>{
   assert.deepEqual(step({x:10,y:9},'right'),{x:10,y:9,moved:false});
   assert.deepEqual(step({x:23,y:16},'right'),{x:24,y:16,moved:true});
   assert.deepEqual(step({x:23,y:16},'teleport'),{x:23,y:16,moved:false});
-  assert.deepEqual(step({x:2,y:2},'left'),{x:2,y:2,moved:false});
+  assert.deepEqual(step({x:1,y:20},'left'),{x:1,y:20,moved:false});
 });
 test('interaction radius',()=>{
   assert.equal(near({x:19,y:15},MIRA),true);

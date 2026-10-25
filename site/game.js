@@ -61,9 +61,9 @@ function drawHero(px,py,dir,moving,now){
  const row=heroRows[dir] ?? 0;
  // L'ombre reste au sol pendant que le personnage respire ou marche.
  ctx.fillStyle='#1931296a';
- ctx.beginPath();ctx.ellipse(px,py,16*pose.shadowScale,5*pose.shadowScale,0,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.ellipse(px,py,12*pose.shadowScale,4*pose.shadowScale,0,0,Math.PI*2);ctx.fill();
  if(!heroWalkReady){
-   ctx.save();ctx.translate(px,py);ctx.scale(pose.scaleX,pose.scaleY);
+   ctx.save();ctx.translate(px,py);ctx.scale(pose.scaleX*0.8,pose.scaleY*0.8);
    drawHeroFallback(pose.swayX,pose.bobY,dir,moving,now);
    ctx.restore();
    return;
@@ -76,7 +76,7 @@ function drawHero(px,py,dir,moving,now){
  // Respiration autour des pieds : la position au sol ne bouge pas.
  ctx.drawImage(heroWalkAtlas,pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
    HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,
-   Math.round(-27+pose.swayX),Math.round(-84+pose.bobY),54,84);
+   Math.round(-22+pose.swayX),Math.round(-68+pose.bobY),44,68);
  ctx.restore();
 }
 function drawMira(px,py,now){
@@ -161,7 +161,7 @@ function animate(now){
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
  if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,walking,now);}
  else{drawHero(heroX,heroY,player.dir,walking,now);drawMira(miraX,miraY,now);}
- ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-94);
+ ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-80);
  position.textContent='X '+player.x+' / Y '+player.y;miniPos.textContent=player.x+' · '+player.y;
  hint.hidden=!near(player,MIRA,2);
  if((now|0)%8===0)drawMinimap();

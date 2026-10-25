@@ -1,4 +1,4 @@
-// Décors originaux d'Éclats d'Astria : pixel art 32 px, sprites compacts version 0.1.7.
+// Décors originaux d'Éclats d'Astria : pixel art 32 px, arbres plus grands et clairsemés version 0.1.8.
 const TILE_SIZE=32;
 const C={
   grass:['#659c76','#6da680','#75ae81','#5e966f'],
@@ -118,33 +118,35 @@ function grasses(g,x,y,type,noise){
  }
 }
 function tree(g,x,y,noise){
- const px=x*32,py=y*32;
- const sway=choose(noise,x,y,61,3)-1;
- const cx=px+16+sway;
- // Petits arbres dessinés sur une empreinte ~38 x 50 px.
- box(g,cx-12,py+27,26,5,'#315f4a');
- box(g,cx-4,py+12,9,19,'#463c36');
- box(g,cx-1,py+14,3,16,'#795744');
+ const px=x*32,py=y*32,cx=px+16+choose(noise,x,y,61,3)-1;
+ // Houppiers environ 30% plus volumineux, racines ancrées dans la case.
+ box(g,cx-16,py+27,32,6,'#315f4a');
+ box(g,cx-6,py+5,13,26,'#463c36');
+ box(g,cx-3,py+8,6,21,'#795744');
+ box(g,cx-9,py+27,5,3,'#665044');box(g,cx+6,py+28,7,3,'#695044');
  if(noise(x,y,66)<.22){
-  // Sapin compact : des étages coniques et non une immense canopée.
-  for(const [yy,half] of [[-18,7],[-10,11],[0,15],[10,18]]){
-   box(g,cx-half,py+yy+6,half*2,9,'#163f3f');
-   box(g,cx-half+3,py+yy+2,half*2-6,9,'#28654d');
-   box(g,cx-half+6,py+yy,half*2-12,5,'#3b8658');
+  for(const [yy,half] of [[-31,9],[-22,15],[-11,20],[2,24]]){
+   box(g,cx-half,py+yy+7,half*2,11,'#163f3f');
+   box(g,cx-half+3,py+yy+2,half*2-6,10,'#28654d');
+   box(g,cx-half+6,py+yy,half*2-12,6,'#3b8658');
+   box(g,cx-half+8,py+yy+4,7,3,'#7dae6c');
   }
-  box(g,cx-3,py-12,6,3,'#7dae6c');
+  box(g,cx-5,py-26,10,4,'#94bb78');
  }else{
-  box(g,cx-17,py+8,34,13,'#183e3c');
-  box(g,cx-20,py+3,40,12,'#1c5144');
-  box(g,cx-16,py-8,33,19,'#245f49');
-  box(g,cx-11,py-15,24,16,'#2b7352');
-  box(g,cx-6,py-19,14,12,'#397f54');
-  box(g,cx-16,py+2,15,11,'#368154');
-  box(g,cx+5,py-7,13,14,'#2e744e');
-  for(let i=0;i<7;i++){
-   const ox=(noise(x+i*13,y,113+i)*26|0)-13;
-   const oy=(noise(x,y+i*17,132+i)*22|0)-12;
-   box(g,cx+ox,py+oy,4+(i%2),3,i%3===0?'#a0c776':i%3===1?'#6fb16d':'#4a985f');
+  box(g,cx-21,py+8,43,16,'#183e3c');
+  box(g,cx-26,py+1,53,19,'#1c5144');
+  box(g,cx-22,py-15,45,29,'#245f49');
+  box(g,cx-17,py-26,35,22,'#2b7352');
+  box(g,cx-11,py-33,24,16,'#397f54');
+  box(g,cx-22,py-6,19,17,'#368154');
+  box(g,cx+10,py-14,17,23,'#2e744e');
+  box(g,cx-21,py+6,12,7,'#3f9260');
+  box(g,cx+12,py-22,8,5,'#46925c');
+  for(let i=0;i<11;i++){
+   const ox=(noise(x+i*13,y,113+i)*36|0)-18;
+   const oy=(noise(x,y+i*17,132+i)*31|0)-24;
+   box(g,cx+ox,py+oy,5+(i%2),3,
+    i%3===0?'#a0c776':i%3===1?'#6fb16d':'#4a985f');
   }
  }
 }
