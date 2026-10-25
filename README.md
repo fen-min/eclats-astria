@@ -103,3 +103,9 @@ Les quatre arbres et les quatre variantes de hautes herbes utilisent désormais 
 ## Prairie apaisée — version 0.1.21
 
 La prairie utilise les **8 nouvelles tuiles vertes de 32 × 32 pixels** sélectionnées par l'utilisateur (`soft-grass-atlas.png`, planche compacte 256 × 32). La texture se rapproche d'un vert uni avec quelques nuances et rares détails. Les variantes sans brins sont privilégiées. Pour éviter de surcharger le décor, l'affichage des fleurs, petits brins supplémentaires et hautes herbes devient moins fréquent, mais la logique des collisions et de la carte ne change pas. Les chemins de terre, l'étang, les arbres, les maisons, les sauvegardes et l'animation du vent restent conservés. Le sprite se charge indépendamment et la texture précédente sert de repli.
+
+## Compagnons chez Maria — version 0.1.22
+
+Maria (ancien nom affiché : Mira, coordonnées MIRA conservées dans le moteur) propose désormais une liste extensible de créatures originales. Le premier choix est le **Chat rouge tigré**, rôle de combat provisoire DPS. Son atlas transparent `assets/chat-rouge-idle.png` regroupe **16 sprites** : 4 directions × 4 poses de repos, de 52 × 48 px chacune. Il est plus petit que le héros et anime sa queue/respiration pendant l'exploration.
+
+Parler à Maria via E ou PARLER ouvre une liste ; choisir une créature la recrute. Le compagnon suit les pas du héros avec un léger retard, change d'orientation, apparaît sur la minimap et est mémorisé par `localStorage` via `companionId`. Lorsqu'on retourne à la liste des jeux, le compagnon est conservé. La liste repose sur `companions.js` pour faciliter les prochains ajouts. Aucune fonctionnalité de combat n'est encore activée ; les rôles DPS/Tank/Healer et boss roguelike sont prévus ultérieurement.

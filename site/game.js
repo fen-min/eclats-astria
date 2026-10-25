@@ -2,6 +2,7 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
+import {COMPANIONS,CAT_FRAME,CAT_ROWS,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection,catIdleFrame} from './companions.js?v=0.1.22';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -12,9 +13,33 @@ let saved={};try{saved=JSON.parse(localStorage.getItem('astria-save')||'{}')||{}
 const initial=walkable(saved.x,saved.y)?{x:saved.x,y:saved.y}:SPAWN;
 const player={x:initial.x,y:initial.y,rx:initial.x,ry:initial.y,dir:'down',moving:false,fromX:initial.x,fromY:initial.y,stepStartedAt:-Infinity,walkStartedAt:0,lastSuccessfulStepAt:-Infinity};
 let talked=!!saved.talked,lastStep=-Infinity,last=performance.now(),camera={x:0,y:0},noticeTimer=0;
+let selectedCompanion=companionById(saved.companionId);
+let follower=null,footsteps=[{x:player.x,y:player.y}];
+const companionStatus=document.getElementById('companion-status');
+const companionList=document.getElementById('companion-list');
+const dialogTitle=document.getElementById('dialog-title');
+const catAtlas=new Image();
+let catReady=false;
+catAtlas.onload=()=>{catReady=catAtlas.naturalWidth===CAT_FRAME.width*CAT_FRAME.frames && catAtlas.naturalHeight===CAT_FRAME.height*CAT_FRAME.rows;};
+catAtlas.onerror=()=>{catReady=false;};
+catAtlas.src=new URL('./assets/chat-rouge-idle.png?v=0.1.22',import.meta.url).href;
+function resetFollower(){
+ footsteps=[{x:player.x,y:player.y}];
+ if(!selectedCompanion){follower=null;return;}
+ const spot=initialCompanionPosition(player,walkable);
+ follower={x:spot.x,y:spot.y,fromX:spot.x,fromY:spot.y,toX:spot.x,toY:spot.y,
+           dir:player.dir,stepStartedAt:-Infinity};
+}
+resetFollower();
+function updateCompanionUI(){
+ companionStatus.textContent=selectedCompanion
+ ?selectedCompanion.name+' · '+selectedCompanion.role+' · Te suit'
+ :'Aucun compagnon — parle à Maria.';
+}
+updateCompanionUI();
 const keys=new Set();
 const colors={grass:'#659b70',path:'#c4b48a',roof:'#ae655d',roof2:'#4e8292',water:'#407f91'};
-function persist(){try{localStorage.setItem('astria-save',JSON.stringify({x:player.x,y:player.y,talked}));}catch{}}
+function persist(){try{localStorage.setItem('astria-save',JSON.stringify({x:player.x,y:player.y,talked,companionId:selectedCompanion?.id||null}));}catch{}}
 function notify(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>toast.hidden=true,3100);}
 function rect(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h);}
 const world=document.createElement('canvas');
@@ -170,6 +195,37 @@ function drawHero(px,py,dir,moving,now){
  }
  ctx.restore();
 }
+function drawCompanion(px,py,now){
+ if(!selectedCompanion||!follower)return;
+ ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,11,3,0,0,Math.PI*2);ctx.fill();
+ if(catReady){
+  const row=CAT_ROWS[follower.dir]??0;
+  const frame=catIdleFrame(now);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(catAtlas,frame*CAT_FRAME.width,row*CAT_FRAME.height,
+    CAT_FRAME.width,CAT_FRAME.height,
+    Math.round(px-CAT_FRAME.width/2),Math.round(py-CAT_FRAME.height+1),
+    CAT_FRAME.width,CAT_FRAME.height);
+ }else{
+  // Petit compagnon dessiné en secours pendant le chargement.
+  rect(ctx,px-9,py-18,18,16,'#c94b35');
+  rect(ctx,px-7,py-23,5,7,'#252128');
+  rect(ctx,px+2,py-23,5,7,'#252128');
+  rect(ctx,px-4,py-13,3,3,'#f1bd76');
+  rect(ctx,px+2,py-13,3,3,'#f1bd76');
+ }
+}
+function followerOnHeroStep(now){
+ if(!selectedCompanion||!follower)return;
+ const pos=movementPosition(follower.fromX,follower.fromY,follower.toX,follower.toY,
+   now,follower.stepStartedAt);
+ footsteps=appendFootstep(footsteps,player);
+ const target=followTarget(footsteps);
+ follower.fromX=pos.x;follower.fromY=pos.y;
+ follower.dir=facingDirection(pos,target,follower.dir);
+ follower.toX=target.x;follower.toY=target.y;
+ follower.stepStartedAt=now;
+}
 function drawMira(px,py,now){
  const bob=Math.sin(now/400)*1.5,x=Math.round(px),y=Math.round(py+bob);
  ctx.fillStyle='#263a3160';ctx.beginPath();ctx.ellipse(x,y,14,4,0,0,Math.PI*2);ctx.fill();
@@ -177,7 +233,7 @@ function drawMira(px,py,now){
  r(x-13,y-43,25,10,'#674d71');r(x-11,y-25,22,25,'#6e5379');
  r(x-8,y-3,6,6,'#2a2939');r(x+3,y-3,6,6,'#2a2939');
  r(x-2,y-21,4,14,'#e4cf9d');
- ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#f3e0a8';ctx.fillText('✦ MIRA',x,y-55);
+ ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#f3e0a8';ctx.fillText('✦ MARIA',x,y-55);
 }
 function drawMinimap(){
  mc.clearRect(0,0,mini.width,mini.height);
@@ -188,6 +244,9 @@ function drawMinimap(){
    mc.fillRect(x*sx|0,y*sy|0,Math.ceil(sx),Math.ceil(sy));
  }
  mc.fillStyle='#f4d48d';mc.fillRect(MIRA.x*sx-2,MIRA.y*sy-2,5,5);
+ if(selectedCompanion&&follower){
+  mc.fillStyle='#ea8155';mc.fillRect(follower.toX*sx-1,follower.toY*sy-1,3,3);
+ }
  mc.fillStyle='#f7edd2';mc.fillRect(player.x*sx-2,player.y*sy-2,6,6);
 }
 function updatePlayerPosition(now){
@@ -207,7 +266,7 @@ function attempt(dir){
    player.fromX=player.rx;player.fromY=player.ry;
    player.x=result.x;player.y=result.y;
    player.stepStartedAt=now;player.lastSuccessfulStepAt=now;
-   player.moving=true;persist();
+   player.moving=true;followerOnHeroStep(now);persist();
  }
 }
 const keysMap={arrowup:'up',z:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',q:'left',arrowright:'right',d:'right'};
@@ -224,18 +283,50 @@ for(const b of document.querySelectorAll('[data-dir]')){
  b.addEventListener('pointerdown',e=>{if(!isGameActive())return;e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.dir);attempt(b.dataset.dir);});
  for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys.delete(b.dataset.dir);});
 }
+function renderCompanionChoices(){
+ companionList.replaceChildren();
+ for(const companion of COMPANIONS){
+  const choice=document.createElement('button');
+  choice.type='button';choice.className='companion-choice';
+  choice.dataset.companion=companion.id;
+  choice.textContent=(selectedCompanion?.id===companion.id?'✓ ':'✦ ')+
+    companion.name+' · '+companion.role+
+    (selectedCompanion?.id===companion.id?' (actuel)':' — Choisir');
+  choice.addEventListener('click',()=>{
+   if(selectedCompanion?.id!==companion.id){
+    selectedCompanion=companionById(companion.id);
+    resetFollower();
+    persist();updateCompanionUI();
+    notify(companion.name+' rejoint ton équipe !');
+   }
+   dialog.close();
+  });
+  companionList.append(choice);
+ }
+ const future=document.createElement('p');
+ future.className='companion-future';
+ future.textContent='D’autres créatures originales rejoindront bientôt la liste.';
+ companionList.append(future);
+}
 function talk(){
  if(!isGameActive()||dialog.open)return;
  if(near(player,MIRA,2)){
-   talked=true;persist();quest.textContent='✓ Tu as rencontré Mira. À toi d’explorer le Vallon !';
-   document.getElementById('speech').textContent='Mira : « Bienvenue dans les Prairies d’Astria ! Cette région est le commencement de ton aventure. Bientôt, des créatures mystérieuses peupleront les hautes herbes. Pour le moment, explore notre petit village et profite du paysage. »';
+   talked=true;persist();
+   quest.textContent=selectedCompanion
+    ?'✓ Tu as recruté '+selectedCompanion.name+'. Il te suit !'
+    :'✧ Parle à Maria et choisis ta première créature.';
+   dialogTitle.textContent='✦ Maria — Choisis une créature';
+   document.getElementById('speech').textContent='Maria : « Bienvenue ! Choisis un compagnon pour explorer le Vallon à tes côtés. Tu peux revenir me voir pour changer d’équipe plus tard. »';
+   renderCompanionChoices();
    dialog.showModal();keys.clear();player.moving=false;
- } else notify('Approche-toi de Mira, la guide du village.');
+ }else notify('Approche-toi de Maria, la guide du village.');
 }
 document.getElementById('talk').addEventListener('click',talk);
 document.getElementById('close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
-if(talked)quest.textContent='✓ Tu as rencontré Mira. À toi d’explorer le Vallon !';
+if(talked)quest.textContent=selectedCompanion
+ ?'✓ '+selectedCompanion.name+' fait partie de ton équipe.'
+ :'✧ Maria te propose une première créature.';
 function animate(now){
  if(!isGameActive()){last=now;requestAnimationFrame(animate);return;}
  const dt=Math.min(now-last,60);last=now;
@@ -257,8 +348,18 @@ function animate(now){
  }
  const heroX=Math.round((player.rx+.5)*TILE-cx),heroY=Math.round((player.ry+.8)*TILE-cy);
  const miraX=(MIRA.x+.5)*TILE-cx,miraY=(MIRA.y+.8)*TILE-cy;
- if(heroY>miraY){drawMira(miraX,miraY,now);drawHero(heroX,heroY,player.dir,walking,now);}
- else{drawHero(heroX,heroY,player.dir,walking,now);drawMira(miraX,miraY,now);}
+ const actors=[
+  {y:miraY,render:()=>drawMira(miraX,miraY,now)},
+  {y:heroY,render:()=>drawHero(heroX,heroY,player.dir,walking,now)}
+ ];
+ if(follower&&selectedCompanion){
+  const p=movementPosition(follower.fromX,follower.fromY,follower.toX,follower.toY,now,follower.stepStartedAt);
+  follower.x=p.x;follower.y=p.y;
+  const px=Math.round((p.x+.5)*TILE-cx),py=Math.round((p.y+.8)*TILE-cy);
+  actors.push({y:py,render:()=>drawCompanion(px,py,now)});
+ }
+ actors.sort((a,b)=>a.y-b.y);
+ for(const actor of actors)actor.render();
  ctx.fillStyle='#f7e5a7';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('VOUS',heroX,heroY-80);
  position.textContent='X '+player.x+' / Y '+player.y;miniPos.textContent=player.x+' · '+player.y;
  hint.hidden=!near(player,MIRA,2);
@@ -301,5 +402,5 @@ updateFullscreenLabel();
 
 // L'accueil est désormais la première page. Le jeu conserve son état si on revient à la liste.
 mountHub({onReturn:()=>{keys.clear();player.moving=false;}});
-notify('Bienvenue dans le Vallon ! Trouve Mira, la guide.');
+notify(selectedCompanion?'Ton compagnon est prêt à explorer !':'Bienvenue ! Rencontre Maria pour choisir ta créature.');
 requestAnimationFrame(animate);
