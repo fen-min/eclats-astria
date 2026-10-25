@@ -10,10 +10,10 @@ const ANIMS={
  walk:     {label:'Marche',frames:8,fps:8, y:140, height:114,step:123},
  jump:     {label:'Saut',frames:6,fps:9, y:252, height:134,step:125},
  hit:      {label:'Dégâts',frames:4,fps:8, y:386, height:108,step:125},
- fainted:  {label:'K.O.',frames:5,fps:6, y:494, height:126,step:130},
+ fainted:  {label:'K.O.',frames:5,fps:6, y:494, height:126,step:130,crops:[[0,125],[121,270],[261,410],[392,613],[598,780]]},
  basic:    {label:'Attaque normale',frames:6,fps:9,y:620,height:123,step:125},
  special:  {label:'Attaque spéciale',frames:8,fps:9,y:740,height:127,step:123},
- claw:     {label:'Griffes / morsure',frames:6,sourceFrames:5,fps:10,y:868,height:111,step:148},
+ claw:     {label:'Griffes / morsure',frames:6,sourceFrames:5,fps:10,y:868,height:111,step:148,crops:[[0,126],[116,292],[278,466],[423,595],[584,777]]},
  boost:    {label:'Amélioration',frames:6,fps:8,y:975,height:152,step:130},
  angry:    {label:'Intimidation',frames:4,fps:6,y:1120,height:125,step:125},
  dodge:    {label:'Esquive / fouille',frames:8,fps:10,y:1243,height:107,step:123},
@@ -27,8 +27,10 @@ export function miawFrameRect(kind,frame=0){
  const anim=MIAW_ANIMATIONS[kind]||MIAW_ANIMATIONS.idle;
  const sourceFrames=anim.sourceFrames||anim.frames;
  const safeFrame=Math.min(sourceFrames-1,Math.max(0,Math.floor(Number.isFinite(frame)?frame:0)));
- const x=safeFrame*anim.step;
- return {x,y:anim.y,width:Math.min(anim.step,MIAW_SHEET.width-x),height:anim.height};
+ const crop=anim.crops?.[safeFrame];
+ const x=crop?crop[0]:safeFrame*anim.step;
+ const width=crop?crop[1]-crop[0]:anim.step;
+ return {x,y:anim.y,width:Math.min(width,MIAW_SHEET.width-x),height:anim.height};
 }
 export function catIdleFrame(now){
  return Math.floor(Math.max(0,now)/360)%MIAW_ANIMATIONS.idle.frames;
