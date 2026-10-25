@@ -68,7 +68,7 @@ test('Miaw has a front-only idle meow and distinct sideways walk frames',()=>{
  assert.equal(miawAnimation(0,'down',false,4500).kind,'idle');
  for(const dir of ['up','left','right'])
   assert.equal(miawAnimation(4200,dir,false,4200).kind,'idle');
- assert.equal(miawAnimation(4200,'down',true,4200).kind,'idle');
+ assert.equal(miawAnimation(4200,'down',true,4200).kind,'walk');
  assert.deepEqual(MIAW_WALK_FRAME,{width:64,height:64,frames:4,rows:4});
  assert.deepEqual(miawAnimation(375,'down',true),{kind:'walk',row:0,frame:3});
  assert.deepEqual(miawAnimation(375,'up',true),{kind:'walk',row:1,frame:3});
