@@ -1,6 +1,6 @@
-import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
+import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js?v=0.1.18';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
-import {renderTerrain,drawWaterAnimation} from './terrain.js?v=0.1.17';
+import {renderTerrain,drawWaterAnimation} from './terrain.js?v=0.1.18';
 import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
@@ -27,12 +27,13 @@ const g=world.getContext('2d');
 const foliageAtlas=new Image();
 const housesAtlas=new Image();
 const groundAtlas=new Image();
-let foliageReady=false, housesReady=false, groundReady=false;
+const waterAtlas=new Image();
+let foliageReady=false, housesReady=false, groundReady=false, waterReady=false;
 function redrawTerrain(){
  g.clearRect(0,0,world.width,world.height);
  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,
   foliageReady?foliageAtlas:null,housesReady?housesAtlas:null,
-  groundReady?groundAtlas:null);
+  groundReady?groundAtlas:null,waterReady?waterAtlas:null);
 }
 redrawTerrain();
 foliageAtlas.onload=()=>{
@@ -53,6 +54,13 @@ groundAtlas.onload=()=>{
  }else console.warn('Planche des textures de prairie aux dimensions inattendues.');
 };
 groundAtlas.onerror=()=>console.warn('Textures de prairie indisponibles, anciens sols conservés.');
+waterAtlas.onload=()=>{
+ if(waterAtlas.naturalWidth===128&&waterAtlas.naturalHeight===128){
+  waterReady=true;redrawTerrain();
+ }else console.warn('Dimensions incorrectes de la planche d’eau.');
+};
+waterAtlas.onerror=()=>console.warn('Planche d’eau indisponible, dessin de secours conservé.');
+waterAtlas.src=new URL('./assets/water-atlas.png?v=0.1.18',import.meta.url).href;
 groundAtlas.src=new URL('./assets/ground-atlas.png?v=0.1.17',import.meta.url).href;
 foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
 housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.12',import.meta.url).href;

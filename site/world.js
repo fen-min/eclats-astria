@@ -35,8 +35,22 @@ export function tileAt(x,y) {
   if(noise(x,y,3)<.20) return 'tallgrass';
   return 'grass';
 }
+// Les houppiers dépassent leur tronc de 1 case sur les côtés et
+// de 2 cases vers le haut. Leur ombre est désormais solide.
+export function blockedByTreeCanopy(x,y) {
+  if(!Number.isInteger(x)||!Number.isInteger(y))return false;
+  for(let dy=1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++){
+    if(tileAt(x+dx,y+dy)==='tree')return true;
+  }
+  return false;
+}
 export function walkable(x,y) {
-  return ['path','grass','flower','tallgrass','door'].includes(tileAt(x,y)) && !(x===MIRA.x&&y===MIRA.y);
+  const type=tileAt(x,y);
+  if(!['path','grass','flower','tallgrass','door'].includes(type))return false;
+  if(x===MIRA.x&&y===MIRA.y)return false;
+  // Laisser libres les chemins construits, les portes et la route vers Mira.
+  if(type==='path'||type==='door')return true;
+  return !blockedByTreeCanopy(x,y);
 }
 export function step(from, direction) {
   const offset=DIRECTIONS[direction];

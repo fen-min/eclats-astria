@@ -85,3 +85,9 @@ Le sprite de repos existait déjà en version 0.1.15, mais ressemblait beaucoup 
 ## Prairie émeraude et chemin de terre — version 0.1.17
 
 Le sol utilise maintenant la **deuxième proposition graphique validée**. Une planche `ground-atlas.png` de 256 × 64 pixels contient huit variations d'herbe verte et huit variations de chemin terre/sable, extraites de l'image choisie et adaptées à la grille de 32 × 32 pixels sans lissage. Les bordures entre le chemin et l'herbe disposent d'une frange pixelisée. Le terrain d'eau reste intact, tout comme les arbres, les hautes herbes, les maisons, le personnage, les déplacements et les sauvegardes. La texture est chargée indépendamment et dispose du tracé précédent en secours.
+
+## Étang illustré et collisions des arbres — version 0.1.18
+
+Le plan d'eau utilise désormais une planche de **16 tuiles originales en 32 × 32 px**, découpées depuis la proposition approuvée : berges, coins, eau libre, reflets et nénuphars. Les sprites sont sélectionnés suivant les cases voisines et affichés sans lissage. L'ancien dessin sert de secours si l'image manque.
+
+Les grands feuillages bloquent maintenant le personnage sur les cases qui se trouvent **jusqu'à deux cases au-dessus du tronc et une case de chaque côté**. Les chemins aménagés et les portes sont maintenus praticables pour préserver l'accès au village, aux maisons et à Mira. Le menu, les sauvegardes et les animations du héros sont inchangés.

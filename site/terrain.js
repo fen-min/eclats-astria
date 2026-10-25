@@ -47,8 +47,34 @@ function poly(g,points,color){
  for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);
  g.closePath();g.fill();
 }
-function ground(g,x,y,type,noise,tileAt,groundAtlas=null){
+// Atlas 4 × 4 issu de la planche d'étang choisie : coins, berges,
+// eau libre, reflets, roseaux et nénuphars, en pixels natifs 32 × 32.
+export const WATER_ATLAS=Object.freeze({width:128,height:128,columns:4,rows:4,tile:32});
+export function waterFrame(x,y,tileAt,noise){
+ const wet=(dx,dy)=>tileAt(x+dx,y+dy)==='water';
+ const top=wet(0,-1),right=wet(1,0),bottom=wet(0,1),left=wet(-1,0);
+ if(!top&&!left)return {col:0,row:0};
+ if(!top&&!right)return {col:2,row:0};
+ if(!bottom&&!left)return {col:0,row:2};
+ if(!bottom&&!right)return {col:2,row:2};
+ if(!top)return {col:noise(x,y,302)<0.3?3:1,row:0};
+ if(!bottom)return {col:1,row:2};
+ if(!left)return {col:0,row:1};
+ if(!right)return {col:2,row:1};
+ const variants=[[1,1],[3,1],[0,3],[1,3],[2,3],[3,3]];
+ const [col,row]=variants[choose(noise,x,y,303,variants.length)];
+ return {col,row};
+}
+function atlasWater(g,img,x,y,tileAt,noise){
+ const {col,row}=waterFrame(x,y,tileAt,noise);
+ g.drawImage(img,col*32,row*32,32,32,x*32,y*32,32,32);
+}
+function ground(g,x,y,type,noise,tileAt,groundAtlas=null,waterAtlas=null){
  const px=x*32, py=y*32, n=choose(noise,x,y,5,4);
+ if(type==='water'&&waterAtlas){
+   atlasWater(g,waterAtlas,x,y,tileAt,noise);
+   return;
+ }
  if(groundAtlas&&type!=='water'){
    atlasGround(g,groundAtlas,px,py,type,noise,x,y);
    if(type==='path'||type==='door')pathFringe(g,px,py,x,y,noise,tileAt);
@@ -278,10 +304,10 @@ function atlasHouse(g,atlas,x,y,frame){
  // Sprite source affiché pixel pour pixel : aucun agrandissement destructeur.
  g.drawImage(atlas,frame*192,0,192,176,Math.round(centerX-96),Math.round(bottomY-176),192,176);
 }
-export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null){
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null,waterAtlas=null){
  g.imageSmoothingEnabled=false;
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas);
+  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas,waterAtlas);
  }
  // Avant les grands objets, poser les fleurs et buissons.
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
