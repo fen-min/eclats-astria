@@ -1,6 +1,7 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js';
 import {renderTerrain,drawWaterAnimation} from './terrain.js';
+import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -105,6 +106,7 @@ function updatePlayerPosition(now){
  player.moving=!pos.finished;
 }
 function attempt(dir){
+ if(!isGameActive())return;
  const now=performance.now();
  if(dialog.open||!DIRECTIONS[dir]||now-lastStep<STEP_DURATION_MS)return;
  updatePlayerPosition(now);
@@ -120,6 +122,7 @@ function attempt(dir){
 }
 const keysMap={arrowup:'up',z:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',q:'left',arrowright:'right',d:'right'};
 window.addEventListener('keydown',e=>{
+ if(!isGameActive())return;
  const key=e.key.toLowerCase();
  if(key==='e'||key==='enter'){if(!e.repeat)talk();e.preventDefault();return;}
  if(!keysMap[key]||dialog.open)return;
@@ -128,11 +131,11 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{const dir=keysMap[e.key.toLowerCase()];if(dir)keys.delete(dir);});
 window.addEventListener('blur',()=>{keys.clear();});
 for(const b of document.querySelectorAll('[data-dir]')){
- b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.dir);attempt(b.dataset.dir);});
+ b.addEventListener('pointerdown',e=>{if(!isGameActive())return;e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.dir);attempt(b.dataset.dir);});
  for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys.delete(b.dataset.dir);});
 }
 function talk(){
- if(dialog.open)return;
+ if(!isGameActive()||dialog.open)return;
  if(near(player,MIRA,2)){
    talked=true;persist();quest.textContent='✓ Tu as rencontré Mira. À toi d’explorer le Vallon !';
    document.getElementById('speech').textContent='Mira : « Bienvenue dans les Prairies d’Astria ! Cette région est le commencement de ton aventure. Bientôt, des créatures mystérieuses peupleront les hautes herbes. Pour le moment, explore notre petit village et profite du paysage. »';
@@ -144,6 +147,7 @@ document.getElementById('close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
 if(talked)quest.textContent='✓ Tu as rencontré Mira. À toi d’explorer le Vallon !';
 function animate(now){
+ if(!isGameActive()){last=now;requestAnimationFrame(animate);return;}
  const dt=Math.min(now-last,60);last=now;
  if(keys.size&&now-lastStep>=STEP_DURATION_MS)attempt([...keys].at(-1));
  updatePlayerPosition(now);
@@ -201,5 +205,7 @@ window.addEventListener('keydown',e=>{
 });
 updateFullscreenLabel();
 
+// L'accueil est désormais la première page. Le jeu conserve son état si on revient à la liste.
+mountHub({onReturn:()=>{keys.clear();player.moving=false;}});
 notify('Bienvenue dans le Vallon ! Trouve Mira, la guide.');
 requestAnimationFrame(animate);

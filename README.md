@@ -45,3 +45,11 @@ GitHub Pages continue de publier `main /docs`. Le mode coopératif n'est pas act
 La carte utilise maintenant des décors pixel art **originaux générés dans `terrain.js`** : feuillages et sapins volumineux, arbustes, hautes herbes, fleurs, chemins texturés, eau animée et deux maisons détaillées (tuiles, cheminée, fenêtres, portes et jardinières). Les collisions et la progression existantes sont conservées.
 
 Inspiration visuelle : RPG rétro sur navigateur, notamment l'ambiance de PokéSurvivor, sans reprendre les fichiers Pokémon, son code ou ses ressources protégées.
+
+## Menu et collection de jeux (0.1.9)
+
+La page d'accueil affiche désormais un **lanceur multi-jeux** : Éclats d'Astria est disponible ; deux places sont prévues pour les prochains jeux. Le bouton « ← Jeux » retourne au menu sans perdre la progression, et les commandes de déplacement sont désactivées lorsque le menu est ouvert.
+
+La liste des jeux se trouve dans `site/hub.js` et `docs/hub.js`. Pour ajouter un nouveau jeu : créer un dossier de jeu indépendant, ajouter une entrée `status: 'available'` avec son chemin `href` dans `GAMES` et la carte apparaît automatiquement dans le menu. Les jeux en cours de préparation utilisent `status: 'planned'` et ne lancent rien.
+
+Les versions `site/` et `docs/` doivent rester identiques.

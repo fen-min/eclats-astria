@@ -51,3 +51,55 @@ body:has(.fullscreen-fallback){overflow:hidden}
     width:min(100%,calc((100dvh - 220px)*14/9))
   }
 }
+
+
+/* Accueil de la collection : une liste de jeux, extensible sans toucher au moteur RPG. */
+[hidden]{display:none!important}
+.hub{min-height:100dvh;padding:20px 20px 30px;display:flex;justify-content:center}
+.hub-shell{width:min(1050px,100%);display:flex;flex-direction:column;min-height:calc(100dvh - 50px)}
+.hub-header{display:flex;align-items:center;gap:13px;border-bottom:1px solid #40554d;padding:8px 0 22px}
+.hub-logo{display:grid;place-items:center;width:42px;height:42px;color:#f0cf8c;font-size:25px;border:1px solid #82744b;background:#233731}
+.hub-brand{font-size:14px;font-weight:750;letter-spacing:3px;color:#dfe8db}
+.hub-brand strong{color:#f1d49a}
+.hub-tag{font-size:10px;letter-spacing:2px;color:#b2a17a;border:1px solid #555747;padding:8px 10px;margin-left:auto}
+.hub-content{margin:auto 0;width:100%;padding:70px 0 85px}
+.hub-eyebrow{color:#c8b082;font-size:11px;letter-spacing:2.5px;font-weight:750}
+.hub-content h1{font:normal clamp(40px,6vw,78px) Georgia,serif;letter-spacing:-2px;line-height:1.1;color:#f2e8cf;margin:22px 0 12px}
+.hub-content h1 em{font-style:normal;color:#d6ae73}
+.hub-intro{font-size:15px;color:#aebfbb;line-height:1.65;margin:0 0 43px}
+.hub-section-title{display:flex;justify-content:space-between;color:#c1ac81;font-size:11px;letter-spacing:2px;font-weight:800;padding:0 2px 12px}
+.hub-list{display:grid;gap:12px}
+.hub-game{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:119px;width:100%;padding:19px 22px;border:1px solid #46605b;background:#1a303a;color:inherit;text-align:left;box-shadow:0 8px 24px #0002;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+button.hub-game{cursor:pointer;font:inherit}
+button.hub-game:hover{background:#29423f;border-color:#d0b17a;transform:translateY(-2px)}
+button.hub-game:focus-visible{outline:2px solid #f0ce8d;outline-offset:3px}
+.hub-game-icon{display:grid;place-items:center;width:64px;height:64px;border:1px solid #8e8058;background:#364a3f;color:#f3d6a0;font-size:32px;flex-shrink:0}
+.hub-game-info{display:flex;flex-direction:column;gap:7px;min-width:0}
+.hub-game-info strong{font:normal 24px Georgia,serif;color:#f7ead0}
+.hub-game-info>span{color:#b9c8c4;font-size:13px;line-height:1.3}
+.hub-game-info small{color:#c3b38d;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.hub-game-state{color:#ebd09c;border:1px solid #9f8860;background:#4a4735;padding:10px 12px;font-size:11px;letter-spacing:1px;font-weight:850;white-space:nowrap}
+.hub-game.is-planned{opacity:.65;background:#172831;border-color:#324c4b}
+.hub-game.is-planned .hub-game-icon{background:#263a39;border-color:#607164;color:#b8c1b3}
+.hub-game.is-planned .hub-game-state{background:transparent;border-color:#52605a;color:#9aafa6}
+.hub-note{color:#93a9a7;margin:24px 2px 0;font-size:12px;line-height:1.6}
+.hub-footer{margin-top:auto;border-top:1px solid #40554d;padding:20px 0;color:#809a99;font-size:10px;letter-spacing:2px}
+.hub-footer span{color:#d6ae73;margin:0 6px}
+.menu-back-button{border:1px solid #719186;background:#233f3f;color:#e4e9ce;padding:10px 13px;cursor:pointer;font-size:11px;font-weight:800;white-space:nowrap}
+.menu-back-button:hover,.menu-back-button:focus-visible{background:#3d6657;border-color:#e3c88e;outline-offset:2px}
+@media(max-width:650px){
+ .hub{padding:14px}
+ .hub-shell{min-height:calc(100dvh - 28px)}
+ .hub-header{gap:8px;padding:6px 0 14px}
+ .hub-brand{font-size:12px;letter-spacing:1px}
+ .hub-tag{font-size:8px;letter-spacing:0;padding:6px}
+ .hub-content{padding:45px 0 50px}
+ .hub-intro{font-size:13px;margin-bottom:29px}
+ .hub-game{grid-template-columns:44px minmax(0,1fr);gap:12px;min-height:112px;padding:14px}
+ .hub-game-icon{width:44px;height:44px;font-size:24px}
+ .hub-game-info strong{font-size:20px}
+ .hub-game-info>span{font-size:11px}
+ .hub-game-state{grid-column:2;padding:5px 0;border:0;background:none}
+ .frame-heading .sun{display:none}
+ .menu-back-button{padding:9px}
+}

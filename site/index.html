@@ -5,19 +5,37 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#101b28">
   <meta name="description" content="Éclats d'Astria : un RPG 2D original en pixel art, jouable dans le navigateur.">
-  <title>Éclats d’Astria — Le Premier Voyage</title>
+  <title>Mes jeux — Atelier Astria</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div class="app">
+<main id="game-hub" class="hub" aria-label="Menu des jeux">
+  <div class="hub-shell">
+    <header class="hub-header">
+      <span class="hub-logo">✦</span>
+      <span class="hub-brand">ATELIER <strong>ASTRIA</strong></span>
+      <span class="hub-tag">NOTRE COLLECTION</span>
+    </header>
+    <section class="hub-content">
+      <div class="hub-eyebrow">✦ BIBLIOTHÈQUE DE JEUX</div>
+      <h1>Choisis ton <em>aventure.</em></h1>
+      <p class="hub-intro">Tous nos jeux au même endroit. Sélectionne un titre pour jouer.</p>
+      <div class="hub-section-title"><span>JEUX</span><span>01 DISPONIBLE</span></div>
+      <div id="game-list" class="hub-list" aria-label="Liste des jeux"></div>
+      <p class="hub-note">De nouveaux jeux seront ajoutés ici au fur et à mesure de leur création.</p>
+    </section>
+    <footer class="hub-footer">✦ ATELIER ASTRIA <span>·</span> COLLECTION DE JEUX</footer>
+  </div>
+</main>
+<div class="app" id="astria-app" hidden>
   <header class="header">
     <div class="logo"><span class="star">✦</span><div><div class="brand">ÉCLATS <span>D’ASTRIA</span></div><small>CHAPITRE 00 · LE PREMIER VOYAGE</small></div></div>
-    <div class="status"><span class="version">ALPHA 0.1.8</span><span class="tag"><b class="dot"></b> AVENTURE SOLO</span></div>
+    <div class="status"><span class="version">ALPHA 0.1.9</span><span class="tag"><b class="dot"></b> AVENTURE SOLO</span></div>
   </header>
   <main class="columns">
     <section class="frame">
-      <div class="frame-heading"><div><div class="eyebrow">RÉGION 01 / LE VALLON</div><h1>Prairies d’Astria</h1></div><div class="view-options"><div class="sun">☀ <small>AURORE</small></div><button type="button" id="fullscreen-toggle" class="fullscreen-button" aria-label="Agrandir le jeu en plein écran" aria-pressed="false">⛶ Plein écran</button></div></div>
+      <div class="frame-heading"><div><div class="eyebrow">RÉGION 01 / LE VALLON</div><h1>Prairies d’Astria</h1></div><div class="view-options"><button type="button" id="return-to-menu" class="menu-back-button">← Jeux</button><div class="sun">☀ <small>AURORE</small></div><button type="button" id="fullscreen-toggle" class="fullscreen-button" aria-label="Agrandir le jeu en plein écran" aria-pressed="false">⛶ Plein écran</button></div></div>
       <div class="canvas-wrap">
         <canvas id="game" width="1008" height="648" aria-label="Jeu : carte du Vallon" tabindex="0"></canvas>
         <div id="toast" class="toast" aria-live="polite" hidden></div>
