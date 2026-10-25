@@ -4,7 +4,9 @@ export const COMPANIONS=Object.freeze([
 ]);
 export const CAT_FRAME=Object.freeze({width:52,height:48,frames:4,rows:4});
 export const CAT_ROWS=Object.freeze({down:0,up:1,left:2,right:3});
-export const MIAW_WALK_FRAME=Object.freeze({width:52,height:48,frames:8,rows:2});
+// Miaw : une spritesheet de marche de 256 × 256, 4 frames par direction.
+export const MIAW_WALK_FRAME=Object.freeze({width:64,height:64,frames:4,rows:4});
+export const MIAW_WALK_FPS=8;
 // Nouvelle planche validée : 8 poses de 64 × 64 à 8 images/seconde.
 export const MIAW_MEOW_FRAME=Object.freeze({width:64,height:64,frames:8,rows:1});
 export const MIAW_MEOW_FPS=8;
@@ -14,9 +16,8 @@ export function companionById(id){
 }
 export function miawAnimation(now,dir,moving,idleFor=0){
  if(moving){
-  if(dir==='left'||dir==='right')
-   return {kind:'walk',row:dir==='left'?0:1,frame:Math.floor(now/85)%8};
-  return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
+  // 4 directions : face, dos, gauche, droite.
+  return {kind:'walk',row:CAT_ROWS[dir]??0,frame:Math.floor(now/(1000/MIAW_WALK_FPS))%4};
  }
  if(dir==='down'&&idleFor>=3500){
   // Une seule seconde de miaulement, puis une pause calme.

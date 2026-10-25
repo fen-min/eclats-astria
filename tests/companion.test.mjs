@@ -50,13 +50,13 @@ test('both browser builds provide Maria recruitment, persistence and follower dr
   assert.match(g,/drawCompanion\(px,py,now\)/);
   assert.match(g,/renderCompanionChoices\(/);
   // Le moteur charge les trois PNG à partir d'un nom de fichier dynamique.
-  assert.ok(g.includes("image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.24'"));
+  assert.ok(g.includes("image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.25'"));
   for(const kind of ['idle','walk','meow'])assert.ok(g.includes("'"+kind+"'"));
   assert.match(g,/miawAnimation\(now,follower\.dir,walking/);
   assert.match(h,/id="companion-list"/);
   assert.match(h,/id="companion-status"/);
   assert.match(h,/PARLER À MARIA/);
-  assert.match(h,/game\.js\?v=0\.1\.24/);
+  assert.match(h,/game\.js\?v=0\.1\.25/);
  }
 });
 
@@ -69,7 +69,19 @@ test('Miaw has a front-only idle meow and distinct sideways walk frames',()=>{
  for(const dir of ['up','left','right'])
   assert.equal(miawAnimation(4200,dir,false,4200).kind,'idle');
  assert.equal(miawAnimation(4200,'down',true,4200).kind,'idle');
- assert.deepEqual(miawAnimation(850,'left',true),{kind:'walk',row:0,frame:2});
- assert.deepEqual(miawAnimation(850,'right',true),{kind:'walk',row:1,frame:2});
+ assert.deepEqual(MIAW_WALK_FRAME,{width:64,height:64,frames:4,rows:4});
+ assert.deepEqual(miawAnimation(375,'down',true),{kind:'walk',row:0,frame:3});
+ assert.deepEqual(miawAnimation(375,'up',true),{kind:'walk',row:1,frame:3});
+ assert.deepEqual(miawAnimation(375,'left',true),{kind:'walk',row:2,frame:3});
+ assert.deepEqual(miawAnimation(375,'right',true),{kind:'walk',row:3,frame:3});
+ assert.deepEqual(miawAnimation(500,'left',true),{kind:'walk',row:2,frame:0});
  assert.equal(miawAnimation(900,'down',false,100).kind,'idle');
+});
+
+test('the four walking rows are connected to the same stable draw size',()=>{
+ for(const dir of ['docs','site']){
+  const code=readFileSync(new URL('../'+dir+'/game.js',import.meta.url),'utf8');
+  assert.match(code,/kind==='meow'\|\|kind==='walk'\?48:frame\.width/);
+  assert.match(code,/kind==='meow'\|\|kind==='walk'\?48:frame\.height/);
+ }
 });

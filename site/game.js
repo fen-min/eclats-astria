@@ -2,7 +2,7 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
-import {COMPANIONS,CAT_FRAME,CAT_ROWS,MIAW_WALK_FRAME,MIAW_MEOW_FRAME,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.24';
+import {COMPANIONS,CAT_FRAME,CAT_ROWS,MIAW_WALK_FRAME,MIAW_MEOW_FRAME,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.25';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -24,7 +24,7 @@ for(const [kind,frame] of [['idle',CAT_FRAME],['walk',MIAW_WALK_FRAME],['meow',M
  const image=miawAtlases[kind];
  image.onload=()=>{miawReady[kind]=image.naturalWidth===frame.width*frame.frames&&image.naturalHeight===frame.height*frame.rows;};
  image.onerror=()=>{miawReady[kind]=false;};
- image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.24',import.meta.url).href;
+ image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.25',import.meta.url).href;
 }
 function resetFollower(){
  footsteps=[{x:player.x,y:player.y}];
@@ -211,10 +211,10 @@ function drawCompanion(px,py,now){
   const row=kind===pose.kind?pose.row:(CAT_ROWS[follower.dir]??0);
   const col=kind===pose.kind?pose.frame:0;
   ctx.imageSmoothingEnabled=false;
-  // L'atlas du miaulement est en 64px natifs, affiché à la taille
-  // du compagnon pour éviter qu'il grandisse soudain durant l'animation.
-  const drawW=kind==='meow'?48:frame.width;
-  const drawH=kind==='meow'?48:frame.height;
+  // Les deux planches 64px sont affichées à l'échelle du compagnon :
+  // Miaw ne grandit pas quand il commence à marcher ou à miauler.
+  const drawW=kind==='meow'||kind==='walk'?48:frame.width;
+  const drawH=kind==='meow'||kind==='walk'?48:frame.height;
   ctx.drawImage(image,col*frame.width,row*frame.height,frame.width,frame.height,
    Math.round(px-drawW/2),Math.round(py-drawH+1),drawW,drawH);
  }else{
