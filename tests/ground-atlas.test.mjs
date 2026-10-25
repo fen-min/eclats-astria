@@ -41,6 +41,6 @@ test('published and local versions load the new textures with a cache-busting ve
   const html=readFileSync(new URL('../'+dir+'/index.html',import.meta.url),'utf8');
   assert.match(game,/ground-atlas\.png\?v=0\.1\.17/);
   assert.match(game,/groundReady\?groundAtlas:null/);
-  assert.match(html,/game\.js\?v=0\.1\.18/);
+  assert.match(html,/game\.js\?v=0\.1\.19/);
  }
 });
