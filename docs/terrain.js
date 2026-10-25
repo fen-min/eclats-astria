@@ -233,7 +233,15 @@ function house(g,x,y,roofVariant,doorColumn,noise){
   wildflower(g,ax+7,sy+107,red?'#f0abc0':'#f8deb2');
  }
 }
-export function renderTerrain(g,width,height,tileAt,noise,atlas=null){
+// Deux cottages RPG transparents (gauche : vert, droite : rouge).
+export const HOUSES_ATLAS=Object.freeze({width:256,height:120,columns:2,frameWidth:128,frameHeight:120});
+function atlasHouse(g,atlas,x,y,frame){
+ const centerX=(x+2.5)*32;
+ const bottomY=(y+4)*32;
+ // La porte tombe au centre de la case d'entrée existante (x11 ou x35).
+ g.drawImage(atlas,frame*128,0,128,120,Math.round(centerX-96),Math.round(bottomY-176),192,176);
+}
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null){
  g.imageSmoothingEnabled=false;
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
   ground(g,x,y,tileAt(x,y),noise,tileAt);
@@ -250,9 +258,14 @@ export function renderTerrain(g,width,height,tileAt,noise,atlas=null){
    else tree(g,x,y,noise);
   }
  }
- // Les maisons couvrent les tuiles techniques roof / wall / door.
- house(g,9,9,'roof',2,noise);
- house(g,33,9,'roof2',2,noise);
+ // Images validées par l'utilisateur ; tracés existants en secours si l'atlas tarde.
+ if(houses){
+  atlasHouse(g,houses,9,9,0);
+  atlasHouse(g,houses,33,9,1);
+ }else{
+  house(g,9,9,'roof',2,noise);
+  house(g,33,9,'roof2',2,noise);
+ }
 }
 export function drawWaterAnimation(ctx,camX,camY,now,tileAt,width,height){
  // Quelques reflets animés, sans allocation d'image par frame.

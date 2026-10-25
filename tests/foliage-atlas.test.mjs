@@ -40,6 +40,6 @@ test('the browser loads the sprite sheet in both copies of the game',()=>{
  for(const folder of ['docs','site']){
   const code=readFileSync(new URL('../'+folder+'/game.js',import.meta.url),'utf8');
   assert.match(code,/foliage-atlas\.png\?v=0\.1\.10/);
-  assert.match(code,/renderTerrain\(g,WIDTH,HEIGHT,tileAt,noise,foliageAtlas\)/);
+  assert.match(code,/foliageReady\?foliageAtlas:null,housesReady\?housesAtlas:null/);
  }
 });

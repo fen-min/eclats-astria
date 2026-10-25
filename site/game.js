@@ -21,19 +21,32 @@ const world=document.createElement('canvas');
 world.width=WIDTH*TILE;
 world.height=HEIGHT*TILE;
 const g=world.getContext('2d');
-renderTerrain(g,WIDTH,HEIGHT,tileAt,noise);
-// Pendant le chargement, l'ancien décor sert de secours ;
-// lorsque l'atlas est prêt, la carte est redessinée sans changer les collisions.
+// Chaque ressource peut se charger indépendamment, sans perdre les autres décors.
+// Effacer avant chaque rendu évite que les anciennes maisons restent visibles
+// derrière les contours transparents des nouvelles.
 const foliageAtlas=new Image();
+const housesAtlas=new Image();
+let foliageReady=false, housesReady=false;
+function redrawTerrain(){
+ g.clearRect(0,0,world.width,world.height);
+ renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,
+  foliageReady?foliageAtlas:null,housesReady?housesAtlas:null);
+}
+redrawTerrain();
 foliageAtlas.onload=()=>{
  if(foliageAtlas.naturalWidth===320&&foliageAtlas.naturalHeight===145){
-  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,foliageAtlas);
- }else{
-  console.warn('Planche de végétation aux dimensions inattendues.');
- }
+  foliageReady=true;redrawTerrain();
+ }else console.warn('Planche de végétation aux dimensions inattendues.');
 };
-foliageAtlas.onerror=()=>console.warn('Décors de secours affichés : atlas indisponible.');
+foliageAtlas.onerror=()=>console.warn('Décors de secours affichés : feuillages indisponibles.');
+housesAtlas.onload=()=>{
+ if(housesAtlas.naturalWidth===256&&housesAtlas.naturalHeight===120){
+  housesReady=true;redrawTerrain();
+ }else console.warn('Planche de maisons aux dimensions inattendues.');
+};
+housesAtlas.onerror=()=>console.warn('Décors de secours affichés : maisons indisponibles.');
 foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
+housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.11',import.meta.url).href;
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}
 function drawHeroFallback(px,py,dir,moving,now){
  const x=Math.round(px-16),y=Math.round(py-69);

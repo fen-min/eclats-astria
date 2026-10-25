@@ -57,3 +57,7 @@ Les versions `site/` et `docs/` doivent rester identiques.
 ## Arbres et herbes illustrés (0.1.10)
 
 Les quatre nouveaux arbres et les quatre variantes de hautes herbes ont été découpés depuis la planche originale validée. L'atlas `assets/foliage-atlas.png` est chargé dans le navigateur (rendu pixelisé sans lissage). Le moteur affiche un décor vectoriel de secours jusqu'au chargement, puis reconstruit la carte avec la planche. La palette des sols est harmonisée avec le vert des nouveaux sprites. La densité et les collisions de la carte restent inchangées. Le menu multi-jeux et la sauvegarde du personnage sont conservés.
+
+## Maisons vertes et rouges (version 0.1.11)
+
+Les deux maisons du village utilisent désormais les sprites approuvés : cottage au toit **vert** à l'ouest (entrée en 11,12) et cottage au toit **rouge** à l'est (entrée en 35,12). L'atlas transparent `assets/houses-atlas.png` contient les deux maisons (2 cellules de 128 × 120 pixels), affichées en pixel art sans lissage. Les deux ressources (feuillage et maisons) se chargent séparément puis déclenchent un nouveau rendu de la carte effacée, pour éviter les anciens décors visibles derrière les transparences. Les collisions, les sauvegardes, le menu des jeux et les animations du personnage restent inchangés.
