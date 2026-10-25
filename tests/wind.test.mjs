@@ -29,7 +29,7 @@ test('only visible foliage is animated with stationary bases',()=>{
  drawWindFoliage(ctx,camX,camY,0,tileAt,noise,atlas,WIDTH,HEIGHT);
  assert.equal(ctx.imageSmoothingEnabled,false);
  assert.ok(calls.length>40);
- assert.ok(calls.length<8000,'don't redraw the full forest outside the camera');
+ assert.ok(calls.length<8000,"don't redraw the full forest outside the camera");
  assert.ok(calls.every(a=>a[0]===atlas&&a[3]===80&&a[7]>0&&a[8]>0));
  const tree= calls.filter(a=>a[2]<90);
  const grass=calls.filter(a=>a[2]>=90);
