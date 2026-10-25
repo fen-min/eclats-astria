@@ -1,32 +1,49 @@
-// Créatures recrutables et comportement de suivi, indépendants du rendu.
+// Miaw : planche finale 13 animations, compagnon et logique de suivi.
 export const COMPANIONS=Object.freeze([
-  Object.freeze({id:'miaw',name:'Miaw',role:'DPS',sprite:'miaw-idle.png',description:'Chaton démon orange et noir'})
+ Object.freeze({id:'miaw',name:'Miaw',role:'DPS',sprite:'miaw-actions.base64',description:'Chaton démon orange et noir'})
 ]);
-export const CAT_FRAME=Object.freeze({width:52,height:48,frames:4,rows:4});
-export const CAT_ROWS=Object.freeze({down:0,up:1,left:2,right:3});
-// Miaw : une spritesheet de marche de 256 × 256, 4 frames par direction.
-export const MIAW_WALK_FRAME=Object.freeze({width:64,height:64,frames:4,rows:4});
-export const MIAW_WALK_FPS=8;
-// Nouvelle planche validée : 8 poses de 64 × 64 à 8 images/seconde.
-export const MIAW_MEOW_FRAME=Object.freeze({width:64,height:64,frames:8,rows:1});
-export const MIAW_MEOW_FPS=8;
-export function companionById(id){
-  // Le compagnon reste choisi sur les anciennes sauvegardes.
-  return COMPANIONS.find(c=>c.id===(id==='chat-rouge'?'miaw':id))||null;
+export const MIAW_SHEET=Object.freeze({width:984,height:1599});
+// Coordonnées de chaque bande de la planche fournie. Elle ne contient qu'une vue
+// latérale ; la vue gauche est retournée horizontalement au rendu.
+const ANIMS={
+ idle:     {label:'Repos',frames:4,fps:3, y:25,  height:108,step:125},
+ walk:     {label:'Marche',frames:8,fps:8, y:140, height:114,step:123},
+ jump:     {label:'Saut',frames:6,fps:9, y:252, height:134,step:125},
+ hit:      {label:'Dégâts',frames:4,fps:8, y:386, height:108,step:125},
+ fainted:  {label:'K.O.',frames:5,fps:6, y:494, height:126,step:130},
+ basic:    {label:'Attaque normale',frames:6,fps:9,y:620,height:123,step:125},
+ special:  {label:'Attaque spéciale',frames:8,fps:9,y:740,height:127,step:123},
+ claw:     {label:'Griffes / morsure',frames:6,sourceFrames:5,fps:10,y:868,height:111,step:148},
+ boost:    {label:'Amélioration',frames:6,fps:8,y:975,height:152,step:130},
+ angry:    {label:'Intimidation',frames:4,fps:6,y:1120,height:125,step:125},
+ dodge:    {label:'Esquive / fouille',frames:8,fps:10,y:1243,height:107,step:123},
+ sleep:    {label:'Sommeil',frames:4,fps:3,y:1350,height:115,step:125},
+ elemental:{label:'Effet élémentaire',frames:8,fps:9,y:1465,height:134,step:123}
+};
+export const MIAW_ANIMATIONS=Object.freeze(Object.fromEntries(
+ Object.entries(ANIMS).map(([name,entry])=>[name,Object.freeze(entry)])
+));
+export function miawFrameRect(kind,frame=0){
+ const anim=MIAW_ANIMATIONS[kind]||MIAW_ANIMATIONS.idle;
+ const sourceFrames=anim.sourceFrames||anim.frames;
+ const safeFrame=Math.min(sourceFrames-1,Math.max(0,Math.floor(Number.isFinite(frame)?frame:0)));
+ const x=safeFrame*anim.step;
+ return {x,y:anim.y,width:Math.min(anim.step,MIAW_SHEET.width-x),height:anim.height};
 }
-export function miawAnimation(now,dir,moving,idleFor=0){
- if(moving){
-  // 4 directions : face, dos, gauche, droite.
-  return {kind:'walk',row:CAT_ROWS[dir]??0,frame:Math.floor(now/(1000/MIAW_WALK_FPS))%4};
+export function catIdleFrame(now){
+ return Math.floor(Math.max(0,now)/360)%MIAW_ANIMATIONS.idle.frames;
+}
+export function miawAnimation(now,dir,moving,idleFor=0,forced=null){
+ if(forced&&MIAW_ANIMATIONS[forced.kind]){
+  const animation=MIAW_ANIMATIONS[forced.kind];
+  return {kind:forced.kind,frame:Math.min(animation.frames-1,
+   Math.max(0,Math.floor((now-forced.startedAt)/(1000/animation.fps))))};
  }
- if(dir==='down'&&idleFor>=3500){
-  // Une seule seconde de miaulement, puis une pause calme.
-  // La frame 8 est identique à la frame 1 pour une boucle sans saut.
-  const cycle=(idleFor-3500)%8400;
-  if(cycle<1000)
-   return {kind:'meow',row:0,frame:Math.floor(cycle/(1000/MIAW_MEOW_FPS))};
- }
- return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
+ if(moving)return {kind:'walk',frame:Math.floor(Math.max(0,now)/(1000/MIAW_ANIMATIONS.walk.fps))%8};
+ return {kind:'idle',frame:catIdleFrame(now)};
+}
+export function companionById(id){
+ return COMPANIONS.find(c=>c.id===(id==='chat-rouge'?'miaw':id))||null;
 }
 export function initialCompanionPosition(hero,canWalk){
  const offsets={down:[0,-1],up:[0,1],left:[1,0],right:[-1,0]};
@@ -49,7 +66,4 @@ export function facingDirection(from,to,previous='down'){
  if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';
  if(dy!==0)return dy<0?'up':'down';
  return previous;
-}
-export function catIdleFrame(now){
- return Math.floor(Math.max(0,now)/360)%CAT_FRAME.frames;
 }
