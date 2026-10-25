@@ -1,6 +1,6 @@
 import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step} from './world.js';
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
-import {renderTerrain,drawWaterAnimation} from './terrain.js';
+import {renderTerrain,drawWaterAnimation} from './terrain.js?v=0.1.17';
 import {mountHub,isGameActive} from './hub.js';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
@@ -26,11 +26,13 @@ const g=world.getContext('2d');
 // derrière les contours transparents des nouvelles.
 const foliageAtlas=new Image();
 const housesAtlas=new Image();
-let foliageReady=false, housesReady=false;
+const groundAtlas=new Image();
+let foliageReady=false, housesReady=false, groundReady=false;
 function redrawTerrain(){
  g.clearRect(0,0,world.width,world.height);
  renderTerrain(g,WIDTH,HEIGHT,tileAt,noise,
-  foliageReady?foliageAtlas:null,housesReady?housesAtlas:null);
+  foliageReady?foliageAtlas:null,housesReady?housesAtlas:null,
+  groundReady?groundAtlas:null);
 }
 redrawTerrain();
 foliageAtlas.onload=()=>{
@@ -45,6 +47,13 @@ housesAtlas.onload=()=>{
  }else console.warn('Planche de maisons aux dimensions inattendues.');
 };
 housesAtlas.onerror=()=>console.warn('Décors de secours affichés : maisons indisponibles.');
+groundAtlas.onload=()=>{
+ if(groundAtlas.naturalWidth===256&&groundAtlas.naturalHeight===64){
+  groundReady=true;redrawTerrain();
+ }else console.warn('Planche des textures de prairie aux dimensions inattendues.');
+};
+groundAtlas.onerror=()=>console.warn('Textures de prairie indisponibles, anciens sols conservés.');
+groundAtlas.src=new URL('./assets/ground-atlas.png?v=0.1.17',import.meta.url).href;
 foliageAtlas.src=new URL('./assets/foliage-atlas.png?v=0.1.10',import.meta.url).href;
 housesAtlas.src=new URL('./assets/houses-atlas.png?v=0.1.12',import.meta.url).href;
 function r(x,y,w,h,color){rect(ctx,x,y,w,h,color);}

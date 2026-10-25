@@ -10,14 +10,50 @@ const C={
   evergreen:['#214c48','#285a4c','#2c6651','#347556','#438763','#63a36e','#94bd74']
 };
 const choose=(noise,x,y,seed,n)=>Math.floor(noise(x,y,seed)*n);
+// 8 variantes de prairie + 8 variantes de terre, extraites de la proposition n°2.
+// Elles sont affichées à leur taille native de 32 px, sans lissage.
+export const GROUND_ATLAS=Object.freeze({width:256,height:64,columns:8,variants:8,tile:32});
+function atlasGround(g,img,px,py,type,noise,x,y){
+ const variant=choose(noise,x,y,205,GROUND_ATLAS.variants);
+ const sy=(type==='path'||type==='door')?32:0;
+ g.drawImage(img,variant*32,sy,32,32,px,py,32,32);
+}
+function pathFringe(g,px,py,x,y,noise,tileAt){
+ const path=t=>t==='path'||t==='door';
+ // Bord de chemin irrégulier, conservé même lorsque les tuiles sont adjacentes.
+ if(!path(tileAt(x,y-1))){
+   for(let i=0;i<8;i++){
+     const dy=choose(noise,x*9+i,y,252+i,3);
+     box(g,px+i*4,py,4,1+dy,i%3===0?'#2e703c':'#357c41');
+     if(i%3===1)box(g,px+i*4+2,py+2,2,1,'#b18a55');
+   }
+ }
+ if(!path(tileAt(x,y+1))){
+   for(let i=0;i<8;i++){
+     const dy=choose(noise,x*11+i,y,261+i,3);
+     box(g,px+i*4,py+30-dy,4,2+dy,i%2?'#28713d':'#3f8349');
+   }
+ }
+ if(!path(tileAt(x-1,y))){
+   for(let i=0;i<8;i++)box(g,px,py+i*4,1+choose(noise,x,y*11+i,280+i,3),4,i%2?'#367840':'#276c38');
+ }
+ if(!path(tileAt(x+1,y))){
+   for(let i=0;i<8;i++)box(g,px+30,py+i*4,1+choose(noise,x,y*9+i,290+i,2),4,i%2?'#367840':'#276c38');
+ }
+}
 function box(g,x,y,w,h,color){g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h);}
 function poly(g,points,color){
  g.fillStyle=color;g.beginPath();g.moveTo(points[0][0],points[0][1]);
  for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);
  g.closePath();g.fill();
 }
-function ground(g,x,y,type,noise,tileAt){
+function ground(g,x,y,type,noise,tileAt,groundAtlas=null){
  const px=x*32, py=y*32, n=choose(noise,x,y,5,4);
+ if(groundAtlas&&type!=='water'){
+   atlasGround(g,groundAtlas,px,py,type,noise,x,y);
+   if(type==='path'||type==='door')pathFringe(g,px,py,x,y,noise,tileAt);
+   return;
+ }
  box(g,px,py,32,32,C.grass[n]);
  for(let j=0;j<9;j++){
   const ax=choose(noise,x*19+j*7,y,18+j,29)+1;
@@ -242,10 +278,10 @@ function atlasHouse(g,atlas,x,y,frame){
  // Sprite source affiché pixel pour pixel : aucun agrandissement destructeur.
  g.drawImage(atlas,frame*192,0,192,176,Math.round(centerX-96),Math.round(bottomY-176),192,176);
 }
-export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null){
+export function renderTerrain(g,width,height,tileAt,noise,atlas=null,houses=null,groundAtlas=null){
  g.imageSmoothingEnabled=false;
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  ground(g,x,y,tileAt(x,y),noise,tileAt);
+  ground(g,x,y,tileAt(x,y),noise,tileAt,groundAtlas);
  }
  // Avant les grands objets, poser les fleurs et buissons.
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){

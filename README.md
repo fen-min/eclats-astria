@@ -81,3 +81,7 @@ Le personnage dispose d'une **seconde planche de sprites**, `assets/hero-idle-4.
 ## Affichage du repos corrigé — version 0.1.16
 
 Le sprite de repos existait déjà en version 0.1.15, mais ressemblait beaucoup à la pose fixe de marche et l'effet était presque invisible à 44 × 68 pixels. Le moteur dessine désormais séparément les jambes (fixes au sol) et le torse/tête (respiration verticale de 0 à 3 px, petite oscillation horizontale). La planche à huit images est strictement réservée au déplacement. Le fichier JavaScript principal et les images portent un identifiant de version dans leur URL pour éviter l'ancienne version en cache du navigateur.
+
+## Prairie émeraude et chemin de terre — version 0.1.17
+
+Le sol utilise maintenant la **deuxième proposition graphique validée**. Une planche `ground-atlas.png` de 256 × 64 pixels contient huit variations d'herbe verte et huit variations de chemin terre/sable, extraites de l'image choisie et adaptées à la grille de 32 × 32 pixels sans lissage. Les bordures entre le chemin et l'herbe disposent d'une frange pixelisée. Le terrain d'eau reste intact, tout comme les arbres, les hautes herbes, les maisons, le personnage, les déplacements et les sauvegardes. La texture est chargée indépendamment et dispose du tracé précédent en secours.
