@@ -50,19 +50,22 @@ test('both browser builds provide Maria recruitment, persistence and follower dr
   assert.match(g,/drawCompanion\(px,py,now\)/);
   assert.match(g,/renderCompanionChoices\(/);
   // Le moteur charge les trois PNG à partir d'un nom de fichier dynamique.
-  assert.ok(g.includes("image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.23'"));
+  assert.ok(g.includes("image.src=new URL('./assets/miaw-'+kind+'.png?v=0.1.24'"));
   for(const kind of ['idle','walk','meow'])assert.ok(g.includes("'"+kind+"'"));
   assert.match(g,/miawAnimation\(now,follower\.dir,walking/);
   assert.match(h,/id="companion-list"/);
   assert.match(h,/id="companion-status"/);
   assert.match(h,/PARLER À MARIA/);
-  assert.match(h,/game\.js\?v=0\.1\.23/);
+  assert.match(h,/game\.js\?v=0\.1\.24/);
  }
 });
 
 test('Miaw has a front-only idle meow and distinct sideways walk frames',()=>{
  assert.equal(miawAnimation(4000,'down',false,4200).kind,'meow');
- assert.equal(miawAnimation(4070,'down',false,4300).frame,2);
+ assert.equal(miawAnimation(4070,'down',false,3750).frame,2);
+ assert.deepEqual(MIAW_MEOW_FRAME,{width:64,height:64,frames:8,rows:1});
+ assert.deepEqual(Array.from({length:8},(_,i)=>miawAnimation(0,'down',false,3500+i*125).frame),[0,1,2,3,4,5,6,7]);
+ assert.equal(miawAnimation(0,'down',false,4500).kind,'idle');
  for(const dir of ['up','left','right'])
   assert.equal(miawAnimation(4200,dir,false,4200).kind,'idle');
  assert.equal(miawAnimation(4200,'down',true,4200).kind,'idle');

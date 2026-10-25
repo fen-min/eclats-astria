@@ -75,6 +75,6 @@ test('new water and collisions are loaded in both websites',()=>{
   const html=readFileSync(new URL('../'+dir+'/index.html',import.meta.url),'utf8');
   assert.match(js,/water-atlas\.png\?v=0\.1\.19/);
   assert.match(js,/waterReady\?waterAtlas:null/);
-  assert.match(html,/game\.js\?v=0\.1\.23/);
+  assert.match(html,/game\.js\?v=0\.1\.24/);
  }
 });

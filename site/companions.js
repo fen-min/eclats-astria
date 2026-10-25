@@ -5,7 +5,9 @@ export const COMPANIONS=Object.freeze([
 export const CAT_FRAME=Object.freeze({width:52,height:48,frames:4,rows:4});
 export const CAT_ROWS=Object.freeze({down:0,up:1,left:2,right:3});
 export const MIAW_WALK_FRAME=Object.freeze({width:52,height:48,frames:8,rows:2});
-export const MIAW_MEOW_FRAME=Object.freeze({width:52,height:48,frames:5,rows:1});
+// Nouvelle planche validée : 8 poses de 64 × 64 à 8 images/seconde.
+export const MIAW_MEOW_FRAME=Object.freeze({width:64,height:64,frames:8,rows:1});
+export const MIAW_MEOW_FPS=8;
 export function companionById(id){
   // Le compagnon reste choisi sur les anciennes sauvegardes.
   return COMPANIONS.find(c=>c.id===(id==='chat-rouge'?'miaw':id))||null;
@@ -17,9 +19,11 @@ export function miawAnimation(now,dir,moving,idleFor=0){
   return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
  }
  if(dir==='down'&&idleFor>=3500){
-  const cycle=idleFor%9200;
-  if(cycle>=3500&&cycle<5250)
-   return {kind:'meow',row:0,frame:Math.min(4,Math.floor((cycle-3500)/350))};
+  // Une seule seconde de miaulement, puis une pause calme.
+  // La frame 8 est identique à la frame 1 pour une boucle sans saut.
+  const cycle=(idleFor-3500)%8400;
+  if(cycle<1000)
+   return {kind:'meow',row:0,frame:Math.floor(cycle/(1000/MIAW_MEOW_FPS))};
  }
  return {kind:'idle',row:CAT_ROWS[dir]??0,frame:catIdleFrame(now)};
 }

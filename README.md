@@ -118,3 +118,7 @@ L'ancien « Chat rouge tigré » est remplacé par **Miaw**, un chaton tigré or
 - `assets/miaw-meow.png` : 5 images de la séquence face seulement, tête qui se relève, bouche ouverte, regard à gauche et retour au repos. Elle se déclenche périodiquement après au moins 3,5 secondes d'immobilité de face.
 
 Maria propose Miaw dans sa liste. Les anciennes sauvegardes ayant sélectionné « chat-rouge » retrouvent automatiquement Miaw. Son suivi, les collisions et la position du héros ne sont pas modifiés.
+
+## Miaw — miaulement animé de face, nouvelle planche (0.1.24)
+
+L'animation de miaulement de Miaw a été remplacée par **la nouvelle planche validée**, sans changer son design, son atlas de repos dans les autres directions ni sa marche. Le PNG transparent `assets/miaw-meow.png` contient **8 frames × 64 × 64 px** (512 × 64 px), découpées et alignées au pied depuis la planche originale, la huitième étant strictement identique à la première. Le personnage conserve la même taille à l'écran. La séquence est jouée à **8 FPS**, uniquement si Miaw est immobile et orienté de face, avec une pause entre les répétitions ; elle montre la tête levée, le miaulement, le regard sur la gauche, puis le retour au repos. Les fichiers docs/ et site/ sont synchronisés ; rien ne change à la sauvegarde ni au recrutement auprès de Maria.
