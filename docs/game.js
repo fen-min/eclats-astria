@@ -79,6 +79,14 @@ let heroWalkReady = false;
 heroWalkAtlas.onload = () => { heroWalkReady = heroWalkAtlas.naturalWidth===352 && heroWalkAtlas.naturalHeight===272; };
 heroWalkAtlas.onerror = () => { heroWalkReady = false; };
 heroWalkAtlas.src = new URL('./assets/hero-walk-8.png?v=0.1.13', import.meta.url).href;
+// Planche dédiée aux positions immobiles : face, gauche, droite, dos.
+const heroIdleAtlas = new Image();
+let heroIdleReady = false;
+heroIdleAtlas.onload = () => {
+  heroIdleReady = heroIdleAtlas.naturalWidth===176 && heroIdleAtlas.naturalHeight===68;
+};
+heroIdleAtlas.onerror = () => { heroIdleReady = false; };
+heroIdleAtlas.src = new URL('./assets/hero-idle-4.png?v=0.1.15', import.meta.url).href;
 const heroRows = Object.freeze({down:0,left:1,right:2,up:3});
 // Nouvelle planche : 8 poses par direction, découpées à la taille d'affichage native.
 const HERO_FRAME_WIDTH=44;
@@ -89,7 +97,10 @@ function drawHero(px,py,dir,moving,now){
  // L'ombre reste au sol pendant que le personnage respire ou marche.
  ctx.fillStyle='#1931296a';
  ctx.beginPath();ctx.ellipse(px,py,12*pose.shadowScale,4*pose.shadowScale,0,0,Math.PI*2);ctx.fill();
- if(!heroWalkReady){
+ // L'image de repos est distincte de l'animation à huit poses de marche.
+ // Tant que l'atlas de repos charge, une pose immobile de la marche sert de secours.
+ const idle=!moving && heroIdleReady;
+ if(!idle && !heroWalkReady){
    ctx.save();ctx.translate(px,py);ctx.scale(pose.scaleX*0.8,pose.scaleY*0.8);
    drawHeroFallback(pose.swayX,pose.bobY,dir,moving,now);
    ctx.restore();
@@ -99,15 +110,22 @@ function drawHero(px,py,dir,moving,now){
  ctx.translate(px,py);
  ctx.scale(pose.scaleX,pose.scaleY);
  ctx.imageSmoothingEnabled=false;
- // Les vues latérales et arrière ont un trait noir parasite dans leurs 4 premières
- // lignes source, détaché des cheveux. On exclut uniquement cette zone au rendu.
- // La destination garde exactement la même position de pieds et le même pixel ratio.
- const topTrim=row===0?0:4;
- ctx.drawImage(heroWalkAtlas,
-   pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT+topTrim,
-   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim,
-   Math.round(-22+pose.swayX),Math.round(-68+topTrim+pose.bobY),
-   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim);
+ if(idle){
+   // Quatre sprites fixes au repos, auxquels la respiration donne vie.
+   ctx.drawImage(heroIdleAtlas,
+     row*HERO_FRAME_WIDTH,0,HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,
+     Math.round(-22+pose.swayX),Math.round(-68+pose.bobY),
+     HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT);
+ }else{
+   // Marche : les huit images par direction sont conservées.
+   // On ignore le trait noir parasite des premières lignes latérales/dos.
+   const topTrim=row===0?0:4;
+   ctx.drawImage(heroWalkAtlas,
+     pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT+topTrim,
+     HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim,
+     Math.round(-22+pose.swayX),Math.round(-68+topTrim+pose.bobY),
+     HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim);
+ }
  ctx.restore();
 }
 function drawMira(px,py,now){

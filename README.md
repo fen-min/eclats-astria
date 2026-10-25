@@ -73,3 +73,7 @@ Le personnage aux cheveux noirs, yeux rouges et tenue sombre utilise maintenant 
 ## Correction du trait noir et du repos — version 0.1.14
 
 Certaines images latérales et arrière de la planche à 32 poses contiennent des pixels noirs isolés à leur sommet. Le moteur exclut désormais les 4 premières lignes de ces sprites lors du rendu, sans rogner les cheveux ni déplacer les pieds. L'animation de repos a été amplifiée à l'échelle réelle du personnage (respiration sur 1,9 seconde, variation de hauteur jusqu'à 5 %, balancement horizontal discret), tout en conservant la première pose fixe, les pieds au sol et les huit poses de marche par direction. Aucun sprite n'est lissé.
+
+## Animation de repos dédiée — version 0.1.15
+
+Le personnage dispose d'une **seconde planche de sprites**, `assets/hero-idle-4.png`, qui comporte quatre positions immobiles (face, gauche, droite, dos), découpées depuis le dessin validé en 176 × 68 pixels, fond transparent. Quand le joueur ne marche pas, cette planche est utilisée avec la respiration existante ; pendant les déplacements, la planche `hero-walk-8.png` et ses huit images par direction restent inchangées. Le rendu reste en pixels nets sans lissage. La sauvegarde, les cartes, les collisions et le menu multi-jeux ne sont pas modifiés.
