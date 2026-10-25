@@ -110,3 +110,12 @@ dialog .companion-choice{background:#2c4b3e;border-color:#98b184;margin:0;paddin
 dialog .companion-choice:hover,dialog .companion-choice:focus-visible{background:#40654d;outline:2px solid #efc98b;outline-offset:2px}
 .companion-future,.companion-status{font-size:12px;color:#b7ccc0;line-height:1.7}
 .companion-future{margin:5px 0 0!important}
+
+/* Miaw : commandes de prévisualisation accessibles sur mobile et ordinateur. */
+.miaw-demo p{font-size:12px;color:#bed0cd;line-height:1.65;margin:10px 0 14px}
+.miaw-actions{display:flex;gap:7px;flex-wrap:wrap}
+.miaw-actions select{flex:1 1 160px;min-width:0;padding:9px;background:#233a3b;color:#f4e7ca;border:1px solid #6b836f;cursor:pointer}
+.miaw-actions button{padding:9px 13px;background:#405a49;color:#faedcb;border:1px solid #bf9e67;font-weight:750;cursor:pointer}
+.miaw-actions button:hover:not(:disabled){background:#56735b}
+.miaw-actions button:disabled{opacity:.45;cursor:not-allowed}
+.miaw-actions select:focus-visible,.miaw-actions button:focus-visible{outline:2px solid #edcf8d;outline-offset:2px}
