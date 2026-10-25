@@ -18,15 +18,19 @@ test('movement is bounded after an interrupted or delayed frame',()=>{
   const early=movementPosition(0,0,1,1,0,100);
   assert.equal(early.x,0);
 });
-test('idle breath is subtle, periodic and anchored',()=>{
-  const low=characterPose(0,false,0);
-  const high=characterPose(575,false,0);
-  assert.equal(low.frame,0);
-  assert.equal(high.frame,0);
-  assert.equal(low.bobY,0);
-  assert.equal(high.bobY,0);
-  assert.ok(high.scaleY>low.scaleY);
-  assert.ok(high.scaleY<1.03);
+test('idle breath is visible at character size, periodic, and feet stay planted',()=>{
+  const half=characterPose(0,false,0);
+  const expand=characterPose(475,false,0);
+  const contract=characterPose(1425,false,0);
+  const next=characterPose(1900,false,0);
+  assert.equal(expand.frame,0);
+  assert.equal(expand.bobY,0);
+  assert.ok(expand.scaleY-contract.scaleY>=0.049);
+  assert.ok(expand.scaleY<1.06);
+  assert.ok(expand.scaleX<contract.scaleX);
+  assert.ok(expand.shadowScale<contract.shadowScale);
+  assert.ok(Math.abs(half.scaleY-next.scaleY)<1e-10);
+  assert.ok(Math.abs(expand.swayX)<=0.9);
 });
 test('walking has eight distinct poses per direction and returns smoothly to frame zero',()=>{
   const frames=Array.from({length:8},(_,i)=>characterPose(i*72,true,0).frame);

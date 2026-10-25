@@ -27,14 +27,15 @@ export function characterPose(now,walking,walkStart=0){
       shadowScale:1-0.045*step
     };
   }
-  // Respiration lente : les pieds restent ancrés au sol.
-  const breath=(Math.sin(now*2*Math.PI/2300)+1)/2;
+  // Respiration plus lisible à 44 × 68 pixels, sans déplacer les pieds.
+  // Le corps se déploie d'environ 3 pixels et oscille très légèrement.
+  const breath=(Math.sin(now*2*Math.PI/1900)+1)/2;
   return {
     frame:0,
-    swayX:Math.sin(now*2*Math.PI/3600)*0.24,
+    swayX:Math.sin(now*2*Math.PI/3000)*0.9,
     bobY:0,
-    scaleX:1-0.007*breath,
-    scaleY:1+0.021*breath,
-    shadowScale:1-0.035*breath
+    scaleX:1-0.016*breath,
+    scaleY:1+0.05*breath,
+    shadowScale:1-0.06*breath
   };
 }

@@ -20,7 +20,7 @@ test('larger trees and smaller hero are deployed in both variants',()=>{
   const world=readFileSync(new URL('../'+folder+'/world.js',import.meta.url),'utf8');
   assert.match(tree,/py-33/);
   assert.match(tree,/cx-26/);
-  assert.match(game,/Math\.round\(-68\+pose\.bobY\),44,68/);
+  assert.match(game,/Math\.round\(-68\+topTrim\+pose\.bobY\)/);
   assert.match(world,/noise\(x,y,31\)<\.30/);
  }
 });

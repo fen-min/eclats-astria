@@ -69,3 +69,7 @@ Les deux maisons avaient été réduites à un atlas 256 × 120 (une cellule de 
 ## Nouveau personnage animé — version 0.1.13
 
 Le personnage aux cheveux noirs, yeux rouges et tenue sombre utilise maintenant les **32 sprites de marche validés** : huit images pour chacune des quatre directions (face, gauche, droite, dos). L'atlas transparent `assets/hero-walk-8.png` fait 352 × 272 pixels, avec des cellules de 44 × 68 pixels. Les cellules ont été adaptées à leur taille d'affichage pour préserver des contours nets sans lissage lors de l'exploration. La marche défile toutes les 72 ms avec un léger balancement ; la respiration lente reste active à l'arrêt. L'ancienne planche reste dans le dépôt comme ressource historique, mais n'est plus utilisée pour afficher le héros. La sauvegarde, les collisions, le menu et les autres graphismes ne changent pas.
+
+## Correction du trait noir et du repos — version 0.1.14
+
+Certaines images latérales et arrière de la planche à 32 poses contiennent des pixels noirs isolés à leur sommet. Le moteur exclut désormais les 4 premières lignes de ces sprites lors du rendu, sans rogner les cheveux ni déplacer les pieds. L'animation de repos a été amplifiée à l'échelle réelle du personnage (respiration sur 1,9 seconde, variation de hauteur jusqu'à 5 %, balancement horizontal discret), tout en conservant la première pose fixe, les pieds au sol et les huit poses de marche par direction. Aucun sprite n'est lissé.

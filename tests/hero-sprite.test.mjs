@@ -23,6 +23,8 @@ test('the browser renders the 8-frame animation in every direction without resam
   assert.match(js,/const HERO_FRAME_HEIGHT=68/);
   assert.match(js,/characterPose\(now,moving,player\.walkStartedAt\)/);
   assert.match(js,/imageSmoothingEnabled=false/);
-  assert.match(js,/Math\.round\(-68\+pose\.bobY\),44,68/);
+  assert.match(js,/const topTrim=row===0\?0:4/);
+  assert.match(js,/row\*HERO_FRAME_HEIGHT\+topTrim/);
+  assert.match(js,/Math\.round\(-68\+topTrim\+pose\.bobY\)/);
  }
 });

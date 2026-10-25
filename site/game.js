@@ -99,11 +99,15 @@ function drawHero(px,py,dir,moving,now){
  ctx.translate(px,py);
  ctx.scale(pose.scaleX,pose.scaleY);
  ctx.imageSmoothingEnabled=false;
- // Personnage validé : quatre directions × huit poses, aucune interpolation floue.
- // Respiration autour des pieds : la position au sol ne bouge pas.
- ctx.drawImage(heroWalkAtlas,pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT,
-   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT,
-   Math.round(-22+pose.swayX),Math.round(-68+pose.bobY),44,68);
+ // Les vues latérales et arrière ont un trait noir parasite dans leurs 4 premières
+ // lignes source, détaché des cheveux. On exclut uniquement cette zone au rendu.
+ // La destination garde exactement la même position de pieds et le même pixel ratio.
+ const topTrim=row===0?0:4;
+ ctx.drawImage(heroWalkAtlas,
+   pose.frame*HERO_FRAME_WIDTH,row*HERO_FRAME_HEIGHT+topTrim,
+   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim,
+   Math.round(-22+pose.swayX),Math.round(-68+topTrim+pose.bobY),
+   HERO_FRAME_WIDTH,HERO_FRAME_HEIGHT-topTrim);
  ctx.restore();
 }
 function drawMira(px,py,now){
