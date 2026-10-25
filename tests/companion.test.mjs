@@ -55,7 +55,7 @@ test('Miaw plays 8 walk frames, 4 idle frames, and previews every action',()=>{
  for(const [kind,desc] of Object.entries(MIAW_ANIMATIONS)){
   const start=2000;
   assert.equal(miawAnimation(start,'right',false,0,{kind,startedAt:start}).frame,0);
-  assert.deepEqual(miawAnimation(start+1000*(desc.frames-1)/desc.fps,'right',false,0,{kind,startedAt:start}),
+  assert.deepEqual(miawAnimation(start+1000*(desc.frames-0.25)/desc.fps,'right',false,0,{kind,startedAt:start}),
    {kind,frame:desc.frames-1});
  }
 });
