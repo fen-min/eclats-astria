@@ -172,3 +172,25 @@ ne comporte pas 101 dessins indépendants. Aucune anatomie supplémentaire n'est
 L'orientation face/dos est automatique en exploration ; le profil gauche est retourné.
 Les actions hors déplacement sont prévisualisables mais ne produisent pas de dégâts,
 le système de combat roguelike étant toujours en développement.
+
+
+## Wouf — remplacement du visuel par la nouvelle planche sombre/rouge (0.1.28)
+
+Le **nouvel atlas Wouf**, envoyé par l'utilisateur le 26 octobre 2026, représente
+un chien démon sombre, brun/noir, aux yeux orange et aux flammes rouges.
+Il **remplace intégralement** l'ancien design bleu/blanc : les anciens atlas
+`wouf-actions.png` ne sont plus chargés et sont retirés de `docs/` et `site/`.
+La ressource est conservée au format PNG transparent optimisé 492 × 800,
+encodé en base64 UTF-8 dans `assets/wouf-actions.base64` et décodé dans le navigateur.
+Les deux copies `docs/` et `site/` sont identiques ; un changement de version
+invalide le cache. Les animations (17 catégories / 101 étapes de lecture) et leurs
+zones de découpe ont été réajustées à la **nouvelle** planche ; les poses réutilisées
+sont celles du nouveau Wouf uniquement.
+
+**Limite de la planche fournie :** elle contient seulement des vues de profil.
+Le moteur les retourne pour la direction gauche. Pour les déplacements vers le haut
+et le bas, les animations face/dos affichent provisoirement le profil, sans
+réintroduire le vieux modèle bleu et sans fabriquer des vues inexistantes.
+Les autres séquences et effets rouges sont prévisualisables depuis le panneau.
+Miaw, Maria, la sauvegarde du compagnon, les collisions et le village sont préservés.
+Le combat roguelike reste non implémenté.
