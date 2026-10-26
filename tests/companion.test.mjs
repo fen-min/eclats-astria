@@ -181,7 +181,7 @@ test('autonomous companions keep their distance and avoid blocked cells',()=>{
  }
 });
 test('companion pathfinding goes around obstacles instead of crossing them',()=>{
- const hero={x:5,y:2},from={x:0,y:2};
+ const hero={x:6,y:2},from={x:0,y:2};
  // Mur avec ouverture au sud : le compagnon doit contourner.
  const solid=(x,y)=>x>=0&&x<=7&&y>=0&&y<=5&&!(x===2&&y<5);
  const path=planCompanionRoute(from,hero,solid,'return');
