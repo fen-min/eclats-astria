@@ -6,7 +6,7 @@ import {SPAWN,walkable} from '../site/world.js';
 import {
  COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,
  companionById,initialCompanionPosition,appendFootstep,followTarget,
- facingDirection,catIdleFrame
+ facingDirection,catIdleFrame,COMPANION_WANDER,companionDistance,planCompanionRoute
 } from '../site/companions.js';
 
 test('Miaw is recruitable and old save IDs still migrate',()=>{
@@ -81,7 +81,8 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   const js=readFileSync(new URL('../'+dir+'/game.js',import.meta.url),'utf8');
   const html=readFileSync(new URL('../'+dir+'/index.html',import.meta.url),'utf8');
   assert.match(js,/companionId:selectedCompanion\?\.id\|\|null/);
-  assert.match(js,/followerOnHeroStep\(now\)/);
+  assert.match(js,/updateCompanionMovement\(now\)/);
+  assert.match(js,/notifyCompanionHeroMoved\(now\)/);
   assert.match(js,/drawCompanion\(px,py,now\)/);
   assert.match(js,/renderCompanionChoices\(/);
   assert.match(js,/miaw-actions\.base64\?v=0\.1\.26/);
@@ -92,7 +93,7 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   assert.match(html,/id="companion-animation-play"/);
   assert.match(html,/id="companion-animation-select"/);
   assert.match(html,/PARLER À MARIA/);
-  assert.match(html,/game\.js\?v=0\.1\.29/);
+  assert.match(html,/game\.js\?v=0\.1\.30/);
  }
 });
 
@@ -147,4 +148,49 @@ test('Wouf automatically faces side, front and back and all previews reach their
   assert.deepEqual(woufAnimation(1000,'down',false,{kind,startedAt:1000}),{kind,frame:0});
   assert.equal(woufAnimation(1000+(anim.frames-0.3)*1000/anim.fps,'up',true,{kind,startedAt:1000}).frame,anim.frames-1);
  }
+});
+
+test('autonomous companions keep their distance and avoid blocked cells',()=>{
+ const hero={x:5,y:5}, open=(x,y)=>x>=0&&x<=10&&y>=0&&y<=10;
+ assert.deepEqual(COMPANION_WANDER.minDistance,2);
+ assert.deepEqual(COMPANION_WANDER.maxDistance,4);
+ assert.equal(companionDistance(hero,{x:7,y:7}),4);
+ const spawn=initialCompanionPosition({...hero,dir:'down'},open);
+ assert.equal(companionDistance(spawn,hero),2);
+ const wander=planCompanionRoute({x:6,y:7},hero,open,'roam',()=>.25);
+ assert.ok(wander.length>=1&&wander.length<=3);
+ let prev={x:6,y:7};
+ for(const tile of wander){
+  assert.ok(open(tile.x,tile.y));
+  assert.notDeepEqual(tile,hero);
+  assert.equal(companionDistance(tile,prev),1);
+  prev=tile;
+ }
+ assert.ok(companionDistance(prev,hero)>=2);
+ assert.ok(companionDistance(prev,hero)<=4);
+ const far={x:0,y:0};
+ const route=planCompanionRoute(far,hero,open,'return');
+ assert.ok(route.length>0);
+ assert.ok(companionDistance(route.at(-1),hero)>=2);
+ assert.ok(companionDistance(route.at(-1),hero)<=4);
+ prev=far;
+ for(const tile of route){
+  assert.equal(companionDistance(tile,prev),1);
+  assert.notDeepEqual(tile,hero);
+  prev=tile;
+ }
+});
+test('companion pathfinding goes around obstacles instead of crossing them',()=>{
+ const hero={x:5,y:2},from={x:0,y:2};
+ // Mur avec ouverture au sud : le compagnon doit contourner.
+ const solid=(x,y)=>x>=0&&x<=7&&y>=0&&y<=5&&!(x===2&&y<5);
+ const path=planCompanionRoute(from,hero,solid,'return');
+ assert.ok(path.length>0);
+ assert.ok(path.some(p=>p.x===2&&p.y===5));
+ assert.ok(path.every(p=>solid(p.x,p.y)&&!(p.x===hero.x&&p.y===hero.y)));
+ assert.ok(companionDistance(path.at(-1),hero)>=2);
+ assert.ok(companionDistance(path.at(-1),hero)<=4);
+ // Aucune case disponible : surtout ne jamais traverser le mur.
+ assert.deepEqual(planCompanionRoute({x:0,y:0},{x:4,y:4},
+  (x,y)=>x===0&&y===0,'return'),[]);
 });
