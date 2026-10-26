@@ -2,7 +2,7 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
-import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.27';
+import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,COMPANION_WANDER,companionDistance,planCompanionRoute,facingDirection} from './companions.js?v=0.1.30';
 import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from './wouf.js?v=0.1.29';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
@@ -15,7 +15,7 @@ const initial=walkable(saved.x,saved.y)?{x:saved.x,y:saved.y}:SPAWN;
 const player={x:initial.x,y:initial.y,rx:initial.x,ry:initial.y,dir:'down',moving:false,fromX:initial.x,fromY:initial.y,stepStartedAt:-Infinity,walkStartedAt:0,lastSuccessfulStepAt:-Infinity};
 let talked=!!saved.talked,lastStep=-Infinity,last=performance.now(),camera={x:0,y:0},noticeTimer=0;
 let selectedCompanion=companionById(saved.companionId);
-let follower=null,footsteps=[{x:player.x,y:player.y}];
+let follower=null;
 const companionStatus=document.getElementById('companion-status');
 const companionList=document.getElementById('companion-list');
 const dialogTitle=document.getElementById('dialog-title');
@@ -64,11 +64,12 @@ animationPlay.addEventListener('click',()=>{
  notify(selectedCompanion.name+' : '+animation.label);
 });
 function resetFollower(){
- footsteps=[{x:player.x,y:player.y}];
  if(!selectedCompanion){follower=null;return;}
  const spot=initialCompanionPosition(player,walkable);
+ const now=performance.now();
  follower={x:spot.x,y:spot.y,fromX:spot.x,fromY:spot.y,toX:spot.x,toY:spot.y,
-           dir:player.dir,stepStartedAt:-Infinity,lastMoveAt:performance.now()};
+  dir:player.dir,stepStartedAt:-Infinity,lastMoveAt:now,route:[],
+  nextWanderAt:now+COMPANION_WANDER.restMinMs};
 }
 resetFollower();
 function updateCompanionUI(){
@@ -240,7 +241,7 @@ function drawCompanion(px,py,now){
  if(!selectedCompanion||!follower)return;
  ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,12,3,0,0,Math.PI*2);ctx.fill();
  const walking=Math.abs(follower.fromX-follower.toX)+Math.abs(follower.fromY-follower.toY)>.01
-   && now-follower.stepStartedAt<STEP_DURATION_MS;
+   && now-follower.stepStartedAt<COMPANION_WANDER.stepMs;
  const isWouf=selectedCompanion.id==='wouf';
  let override=null;
  if(companionPreview.kind){
@@ -298,15 +299,40 @@ function drawCompanion(px,py,now){
   rect(ctx,px+2,py-16,4,4,'#f1bd76');
  }
 }
-function followerOnHeroStep(now){
+function notifyCompanionHeroMoved(now){
+ if(!follower)return;
+ // Le trajet de flânerie n'est plus pertinent si le héros a changé de case.
+ follower.route=[];
+ follower.nextWanderAt=now+700;
+}
+function updateCompanionMovement(now){
  if(!selectedCompanion||!follower)return;
- const pos=movementPosition(follower.fromX,follower.fromY,follower.toX,follower.toY,
-   now,follower.stepStartedAt);
- footsteps=appendFootstep(footsteps,player);
- const target=followTarget(footsteps);
- follower.fromX=pos.x;follower.fromY=pos.y;
- follower.dir=facingDirection(pos,target,follower.dir);
- follower.toX=target.x;follower.toY=target.y;
+ const position=movementPosition(follower.fromX,follower.fromY,follower.toX,
+  follower.toY,now,follower.stepStartedAt,COMPANION_WANDER.stepMs);
+ follower.x=position.x;follower.y=position.y;
+ if(!position.finished)return; // ne jamais interrompre un pas : pas de téléportation.
+ const current={x:follower.toX,y:follower.toY};
+ follower.x=current.x;follower.y=current.y;
+ follower.fromX=current.x;follower.fromY=current.y;
+ const distance=companionDistance(current,player);
+ // Plus près de 2 cases : se dégager. Au-delà de 4 : rejoindre l'entourage.
+ if(distance<COMPANION_WANDER.minDistance||distance>COMPANION_WANDER.maxDistance){
+  follower.route=planCompanionRoute(current,player,walkable,'return');
+  follower.nextWanderAt=now+COMPANION_WANDER.restMinMs;
+ }else if(!follower.route.length&&now>=follower.nextWanderAt){
+  follower.route=planCompanionRoute(current,player,walkable,'roam');
+  follower.nextWanderAt=now+COMPANION_WANDER.restMinMs+
+   Math.random()*COMPANION_WANDER.restJitterMs;
+ }
+ if(!follower.route.length)return;
+ const next=follower.route.shift();
+ // La carte ou la position du héros peut changer après le calcul du trajet.
+ if(!walkable(next.x,next.y)||(next.x===player.x&&next.y===player.y)){
+  follower.route=[];
+  return;
+ }
+ follower.dir=facingDirection(current,next,follower.dir);
+ follower.toX=next.x;follower.toY=next.y;
  follower.stepStartedAt=now;
  follower.lastMoveAt=now;
 }
@@ -350,7 +376,7 @@ function attempt(dir){
    player.fromX=player.rx;player.fromY=player.ry;
    player.x=result.x;player.y=result.y;
    player.stepStartedAt=now;player.lastSuccessfulStepAt=now;
-   player.moving=true;followerOnHeroStep(now);persist();
+   player.moving=true;notifyCompanionHeroMoved(now);persist();
  }
 }
 const keysMap={arrowup:'up',z:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',q:'left',arrowright:'right',d:'right'};
@@ -417,6 +443,7 @@ function animate(now){
  const dt=Math.min(now-last,60);last=now;
  if(keys.size&&now-lastStep>=STEP_DURATION_MS)attempt([...keys].at(-1));
  updatePlayerPosition(now);
+ updateCompanionMovement(now);
  // Un déplacement déjà commencé se termine sans saut quand la touche est relâchée.
  const walking=player.moving||(keys.size>0&&now-player.lastSuccessfulStepAt<=STEP_DURATION_MS+40);
  const w=canvas.width,h=canvas.height;
@@ -438,7 +465,7 @@ function animate(now){
   {y:heroY,render:()=>drawHero(heroX,heroY,player.dir,walking,now)}
  ];
  if(follower&&selectedCompanion){
-  const p=movementPosition(follower.fromX,follower.fromY,follower.toX,follower.toY,now,follower.stepStartedAt);
+  const p=movementPosition(follower.fromX,follower.fromY,follower.toX,follower.toY,now,follower.stepStartedAt,COMPANION_WANDER.stepMs);
   follower.x=p.x;follower.y=p.y;
   const px=Math.round((p.x+.5)*TILE-cx),py=Math.round((p.y+.8)*TILE-cy);
   actors.push({y:py,render:()=>drawCompanion(px,py,now)});
