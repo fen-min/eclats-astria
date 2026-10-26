@@ -88,11 +88,11 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   assert.match(js,/miawFrameRect\(/);
   assert.match(js,/companionPreview/);
   assert.match(js,/woufFrameRect\(/);
-  assert.match(js,/wouf-actions\.png\?v=0\.1\.27/);
+  assert.match(js,/wouf-actions\.base64\?v=0\.1\.28/);
   assert.match(html,/id="companion-animation-play"/);
   assert.match(html,/id="companion-animation-select"/);
   assert.match(html,/PARLER À MARIA/);
-  assert.match(html,/game\.js\?v=0\.1\.27/);
+  assert.match(html,/game\.js\?v=0\.1\.28/);
  }
 });
 
@@ -105,7 +105,7 @@ test('Wouf atlas has 17 playable animations and preserves the requested frame co
  assert.deepEqual(Object.fromEntries(Object.entries(WOUF_ANIMATIONS)
   .map(([k,value])=>[k,value.frames])),expected);
  assert.equal(Object.values(expected).reduce((a,b)=>a+b,0),101);
- assert.deepEqual(WOUF_SHEET,{width:420,height:669});
+ assert.deepEqual(WOUF_SHEET,{width:492,height:800});
  for(const [kind,anim] of Object.entries(WOUF_ANIMATIONS)){
   for(let frame=0;frame<anim.frames;frame++){
    const r=woufFrameRect(kind,frame);
@@ -114,16 +114,22 @@ test('Wouf atlas has 17 playable animations and preserves the requested frame co
    assert.ok(r.y+r.height<=WOUF_SHEET.height,kind);
   }
  }
- for(const dir of ['docs','site']){
-  const path=new URL('../'+dir+'/assets/wouf-actions.png',import.meta.url);
-  const png=readFileSync(path);
-  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-  assert.equal(png.readUInt32BE(16),WOUF_SHEET.width);
-  assert.equal(png.readUInt32BE(20),WOUF_SHEET.height);
-  assert.ok(png.length>60000);
- }
- assert.deepEqual(readFileSync(new URL('../docs/assets/wouf-actions.png',import.meta.url)),
-  readFileSync(new URL('../site/assets/wouf-actions.png',import.meta.url)));
+
+ const files=['docs','site'].map(dir=>readFileSync(new URL('../'+dir+'/assets/wouf-actions.base64',import.meta.url),'utf8').replace(/\\s/g,''));
+ assert.equal(files[0],files[1]);
+ const png=Buffer.from(files[0],'base64');
+ assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+ assert.equal(png.readUInt32BE(16),WOUF_SHEET.width);
+ assert.equal(png.readUInt32BE(20),WOUF_SHEET.height);
+ assert.ok(png.length>110000);
+ // Les directions qui ne sont pas présentes dans la nouvelle planche
+ // réutilisent provisoirement le profil (aucune image de l'ancien Wouf bleu).
+ assert.equal(WOUF_ANIMATIONS.idle_front.row,'idle');
+ assert.equal(WOUF_ANIMATIONS.idle_back.row,'idle');
+ assert.equal(WOUF_ANIMATIONS.walk_front.row,'walk');
+ assert.equal(WOUF_ANIMATIONS.walk_back.row,'walk');
+ for(const dir of ['docs','site'])
+  assert.equal(existsSync(new URL('../'+dir+'/assets/wouf-actions.png',import.meta.url)),false);
 });
 test('Wouf automatically faces side, front and back and all previews reach their final frames',()=>{
  for(const [dir,expected] of [['right','idle'],['left','idle'],['down','idle_front'],['up','idle_back']]){
