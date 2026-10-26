@@ -51,7 +51,7 @@ export function companionById(id){
 // La distance se mesure en cases de la grille (Manhattan) : elle
 // laisse respirer les grands sprites, sans bloquer le héros.
 export const COMPANION_WANDER=Object.freeze({
- minDistance:2,maxDistance:4,stepMs:225,restMinMs:1200,restJitterMs:1600
+ minDistance:2,maxDistance:4,stepMs:225,catchUpStepMs:100,restMinMs:1200,restJitterMs:1600
 });
 export function companionDistance(a,b){
  return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
