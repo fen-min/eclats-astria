@@ -83,6 +83,8 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   assert.match(js,/companionId:selectedCompanion\?\.id\|\|null/);
   assert.match(js,/updateCompanionMovement\(now\)/);
   assert.match(js,/notifyCompanionHeroMoved\(now\)/);
+  assert.match(js,/COMPANION_WANDER\.catchUpStepMs/);
+  assert.match(js,/follower\.stepDuration/);
   assert.match(js,/drawCompanion\(px,py,now\)/);
   assert.match(js,/renderCompanionChoices\(/);
   assert.match(js,/miaw-actions\.base64\?v=0\.1\.26/);
@@ -154,6 +156,7 @@ test('autonomous companions keep their distance and avoid blocked cells',()=>{
  const hero={x:5,y:5}, open=(x,y)=>x>=0&&x<=10&&y>=0&&y<=10;
  assert.deepEqual(COMPANION_WANDER.minDistance,2);
  assert.deepEqual(COMPANION_WANDER.maxDistance,4);
+ assert.equal(COMPANION_WANDER.catchUpStepMs,100);
  assert.equal(companionDistance(hero,{x:7,y:7}),4);
  const spawn=initialCompanionPosition({...hero,dir:'down'},open);
  assert.equal(companionDistance(spawn,hero),2);
