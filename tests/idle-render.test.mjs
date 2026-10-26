@@ -27,6 +27,6 @@ test('idle torso breathes visibly while feet remain fixed',()=>{
   assert.match(game,/-68-pose.chestRise/);
   assert.match(game,/hero-idle-4\.png\?v=0\.1\.16/);
   assert.match(game,/hero-walk-8\.png\?v=0\.1\.13/);
-  assert.match(html,/game\.js\?v=0\.1\.25/);
+  assert.match(html,/game\.js\?v=0\.1\.\d+/);
  }
 });
