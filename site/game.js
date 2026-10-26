@@ -3,7 +3,7 @@ import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
 import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.27';
-import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from './wouf.js?v=0.1.28';
+import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from './wouf.js?v=0.1.29';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -31,7 +31,7 @@ const woufAtlas=new Image();
 let woufReady=false;
 woufAtlas.onload=()=>{woufReady=woufAtlas.naturalWidth===WOUF_SHEET.width&&woufAtlas.naturalHeight===WOUF_SHEET.height;};
 woufAtlas.onerror=()=>{woufReady=false;};
-fetch(new URL('./assets/wouf-actions.base64?v=0.1.28',import.meta.url))
+fetch(new URL('./assets/wouf-actions.base64?v=0.1.29',import.meta.url))
  .then(response=>{if(!response.ok)throw new Error('Atlas Wouf indisponible');return response.text();})
  .then(encoded=>{woufAtlas.src='data:image/png;base64,'+encoded.replace(/\s/g,'');})
  .catch(error=>console.warn('Wouf : image de secours',error));
@@ -261,7 +261,7 @@ function drawCompanion(px,py,now){
   ctx.imageSmoothingEnabled=false;
   function drawWouf(kind,index){
    const source=woufFrameRect(kind,index);
-   const dw=Math.round(source.width*0.94),dh=Math.round(source.height*0.94);
+   const dw=source.width,dh=source.height;
    ctx.drawImage(woufAtlas,source.x,source.y,source.width,source.height,
     -Math.round(dw/2),-dh+3,dw,dh);
   }
