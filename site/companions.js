@@ -106,7 +106,8 @@ export function planCompanionRoute(start,hero,canWalk,mode='return',random=Math.
  if(!candidates.length)return [];
  let choice;
  if(roaming){
-  const sample=Number.isFinite(random())?random():0.5;
+  const roll=random();
+  const sample=Number.isFinite(roll)?roll:0.5;
   choice=candidates[Math.min(candidates.length-1,
    Math.max(0,Math.floor(Math.min(0.999999,Math.max(0,sample))*candidates.length)))];
  }else{
