@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from '../site/wouf.js';
+import {WOUF_SHEET,WOUF_CELL,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from '../site/wouf.js';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {SPAWN,walkable} from '../site/world.js';
@@ -88,11 +88,11 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   assert.match(js,/miawFrameRect\(/);
   assert.match(js,/companionPreview/);
   assert.match(js,/woufFrameRect\(/);
-  assert.match(js,/wouf-actions\.base64\?v=0\.1\.28/);
+  assert.match(js,/wouf-actions\.base64\?v=0\.1\.29/);
   assert.match(html,/id="companion-animation-play"/);
   assert.match(html,/id="companion-animation-select"/);
   assert.match(html,/PARLER À MARIA/);
-  assert.match(html,/game\.js\?v=0\.1\.28/);
+  assert.match(html,/game\.js\?v=0\.1\.29/);
  }
 });
 
@@ -105,11 +105,16 @@ test('Wouf atlas has 17 playable animations and preserves the requested frame co
  assert.deepEqual(Object.fromEntries(Object.entries(WOUF_ANIMATIONS)
   .map(([k,value])=>[k,value.frames])),expected);
  assert.equal(Object.values(expected).reduce((a,b)=>a+b,0),101);
- assert.deepEqual(WOUF_SHEET,{width:492,height:800});
+ assert.deepEqual(WOUF_SHEET,{width:896,height:1300});
+ assert.deepEqual(WOUF_CELL,{width:112,height:100});
  for(const [kind,anim] of Object.entries(WOUF_ANIMATIONS)){
   for(let frame=0;frame<anim.frames;frame++){
    const r=woufFrameRect(kind,frame);
    assert.ok(r.width>0&&r.height>0,kind);
+   assert.equal(r.width,WOUF_CELL.width,kind);
+   assert.equal(r.height,WOUF_CELL.height,kind);
+   assert.equal(r.x%WOUF_CELL.width,0,kind);
+   assert.equal(r.y%WOUF_CELL.height,0,kind);
    assert.ok(r.x>=0&&r.y>=0&&r.x+r.width<=WOUF_SHEET.width,kind);
    assert.ok(r.y+r.height<=WOUF_SHEET.height,kind);
   }
@@ -121,7 +126,7 @@ test('Wouf atlas has 17 playable animations and preserves the requested frame co
  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
  assert.equal(png.readUInt32BE(16),WOUF_SHEET.width);
  assert.equal(png.readUInt32BE(20),WOUF_SHEET.height);
- assert.ok(png.length>110000);
+ assert.ok(png.length>400000);
  // Les directions qui ne sont pas présentes dans la nouvelle planche
  // réutilisent provisoirement le profil (aucune image de l'ancien Wouf bleu).
  assert.equal(WOUF_ANIMATIONS.idle_front.row,'idle');
