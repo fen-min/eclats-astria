@@ -74,7 +74,7 @@ function resetFollower(){
 resetFollower();
 function updateCompanionUI(){
  companionStatus.textContent=selectedCompanion
- ?selectedCompanion.name+' · '+selectedCompanion.role+' · Te suit'
+ ?selectedCompanion.name+' · '+selectedCompanion.role+' · Se promène à proximité'
  :'Aucun compagnon — parle à Maria.';
  updateAnimationControls();
 }
