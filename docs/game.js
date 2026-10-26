@@ -69,7 +69,7 @@ function resetFollower(){
  const now=performance.now();
  follower={x:spot.x,y:spot.y,fromX:spot.x,fromY:spot.y,toX:spot.x,toY:spot.y,
   dir:player.dir,stepStartedAt:-Infinity,lastMoveAt:now,route:[],
-  nextWanderAt:now+COMPANION_WANDER.restMinMs};
+  nextWanderAt:now+COMPANION_WANDER.restMinMs,nextRetryAt:0};
 }
 resetFollower();
 function updateCompanionUI(){
@@ -315,6 +315,7 @@ function updateCompanionMovement(now){
  follower.x=current.x;follower.y=current.y;
  follower.fromX=current.x;follower.fromY=current.y;
  const distance=companionDistance(current,player);
+ if(now<follower.nextRetryAt)return; // évite une recherche BFS à chaque frame si bloqué.
  // Plus près de 2 cases : se dégager. Au-delà de 4 : rejoindre l'entourage.
  if(distance<COMPANION_WANDER.minDistance||distance>COMPANION_WANDER.maxDistance){
   follower.route=planCompanionRoute(current,player,walkable,'return');
@@ -324,13 +325,20 @@ function updateCompanionMovement(now){
   follower.nextWanderAt=now+COMPANION_WANDER.restMinMs+
    Math.random()*COMPANION_WANDER.restJitterMs;
  }
- if(!follower.route.length)return;
- const next=follower.route.shift();
- // La carte ou la position du héros peut changer après le calcul du trajet.
- if(!walkable(next.x,next.y)||(next.x===player.x&&next.y===player.y)){
-  follower.route=[];
+ if(!follower.route.length){
+  follower.nextRetryAt=now+450;
   return;
  }
+ const next=follower.route.shift();
+ // La carte ou la position du héros peut changer après le calcul du trajet.
+ if(!walkable(next.x,next.y)||(next.x===player.x&&next.y===player.y)||
+   (distance>=COMPANION_WANDER.minDistance&&
+    companionDistance(next,player)<COMPANION_WANDER.minDistance)){
+  follower.route=[];
+  follower.nextRetryAt=now+450;
+  return;
+ }
+ follower.nextRetryAt=0;
  follower.dir=facingDirection(current,next,follower.dir);
  follower.toX=next.x;follower.toY=next.y;
  follower.stepStartedAt=now;
