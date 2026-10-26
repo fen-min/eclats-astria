@@ -209,3 +209,26 @@ pas sur le dessin original reprennent des poses de la **nouvelle** planche uniqu
 Les paramètres de cache sont mis à jour en 0.1.29 pour forcer le navigateur à
 charger le bon atlas. La superposition possible de Wouf derrière le héros provient
 du tri de profondeur normal dans le village et n'est pas une anomalie de sprite.
+
+
+## Compagnons — promenade autonome autour du héros (0.1.30)
+
+Miaw et Wouf ne suivent plus une ancienne case du héros à chaque déplacement.
+Ils explorent de manière autonome une **zone de 2 à 4 cases** autour du joueur,
+choisissent aléatoirement une courte promenade (1 à 3 cases), font des pauses
+variables, et rejoignent l'entourage dès qu'ils s'en éloignent ou se rapprochent
+trop. Les déplacements utilisent des chemins orthogonaux calculés sur les
+mêmes cases praticables que le joueur : arbres et feuillages solides, étang,
+murs, maisons, limites de la carte et case occupée par le héros sont évités.
+
+Le déplacement se fait **case par case, avec interpolation**, sans changer
+le rendu des sprites ni les animations existantes. Le héros peut continuer à
+marcher normalement et la position du compagnon n'est pas écrite dans
+`localStorage` : au chargement, il réapparaît sur une case sûre près du héros.
+Maria permet toujours de basculer entre Miaw et Wouf. Les deux versions
+`docs/` (GitHub Pages) et `site/` (serveur local) restent synchronisées.
+Le rayon et les durées sont centralisés dans `COMPANION_WANDER` au sein de
+`companions.js`; la recherche de trajet est testable indépendamment du Canvas.
+Une case de repos proche reste possible si aucun chemin praticable ne peut
+être trouvé : le compagnon ne traverse jamais les obstacles pour rejoindre
+le héros.
