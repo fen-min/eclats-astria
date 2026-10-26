@@ -303,6 +303,7 @@ function notifyCompanionHeroMoved(now){
  if(!follower)return;
  // Le trajet de flânerie n'est plus pertinent si le héros a changé de case.
  follower.route=[];
+ follower.nextRetryAt=0;
  follower.nextWanderAt=now+700;
 }
 function updateCompanionMovement(now){
