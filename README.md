@@ -221,6 +221,7 @@ trop. Les déplacements utilisent des chemins orthogonaux calculés sur les
 mêmes cases praticables que le joueur : arbres et feuillages solides, étang,
 murs, maisons, limites de la carte et case occupée par le héros sont évités.
 
+Quand le héros court, le compagnon **accélère pour rattraper la zone** sans téléportation.
 Le déplacement se fait **case par case, avec interpolation**, sans changer
 le rendu des sprites ni les animations existantes. Le héros peut continuer à
 marcher normalement et la position du compagnon n'est pas écrite dans
