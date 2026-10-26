@@ -85,6 +85,7 @@ export function planCompanionRoute(start,hero,canWalk,mode='return',random=Math.
  if(!Number.isInteger(start.x)||!Number.isInteger(start.y)||
     !Number.isInteger(hero.x)||!Number.isInteger(hero.y))return [];
  const roaming=mode==='roam';
+ const respectBuffer=companionDistance(start,hero)>=COMPANION_WANDER.minDistance;
  const queue=[{x:start.x,y:start.y,parent:-1,depth:0}];
  const visited=new Set([start.x+','+start.y]);
  const candidates=[];
@@ -98,7 +99,8 @@ export function planCompanionRoute(start,hero,canWalk,mode='return',random=Math.
   if(roaming&&node.depth>=3)continue;
   for(const [dx,dy] of COMPANION_DIRECTIONS){
    const x=node.x+dx,y=node.y+dy,key=x+','+y;
-   if(visited.has(key)||(x===hero.x&&y===hero.y)||!canWalk(x,y))continue;
+   if(visited.has(key)||(x===hero.x&&y===hero.y)||!canWalk(x,y)||
+      (respectBuffer&&companionDistance({x,y},hero)<COMPANION_WANDER.minDistance))continue;
    visited.add(key);
    queue.push({x,y,parent:index,depth:node.depth+1});
   }
