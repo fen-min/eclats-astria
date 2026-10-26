@@ -194,3 +194,18 @@ réintroduire le vieux modèle bleu et sans fabriquer des vues inexistantes.
 Les autres séquences et effets rouges sont prévisualisables depuis le panneau.
 Miaw, Maria, la sauvegarde du compagnon, les collisions et le village sont préservés.
 Le combat roguelike reste non implémenté.
+
+
+## Wouf — réparation de la découpe des sprites (0.1.29)
+
+Le découpage par rectangles approximatifs produisait des **morceaux de Wouf détachés** à l'écran :
+une case pouvait contenir la tête d'une pose adjacente tandis que le personnage
+était coupé. La planche sombre/rouge fournie par l'utilisateur a été retraitée
+pour **séparer chaque pose sur fond transparent**, avec une cellule constante de
+112 × 100 pixels. Le nouvel atlas fait 896 × 1300 pixels (8 colonnes et
+13 bandes distinctes), et les 17 animations, ainsi que la sélection chez Maria,
+conservent leur comportement. Les poses supplémentaires demandées qui n'existent
+pas sur le dessin original reprennent des poses de la **nouvelle** planche uniquement.
+Les paramètres de cache sont mis à jour en 0.1.29 pour forcer le navigateur à
+charger le bon atlas. La superposition possible de Wouf derrière le héros provient
+du tri de profondeur normal dans le village et n'est pas une anomalie de sprite.
