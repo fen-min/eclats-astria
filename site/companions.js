@@ -1,6 +1,7 @@
-// Miaw : planche finale 13 animations, compagnon et logique de suivi.
+// Compagnons : Miaw (DPS) et Wouf (Tank provisoire), choix et suivi.
 export const COMPANIONS=Object.freeze([
- Object.freeze({id:'miaw',name:'Miaw',role:'DPS',sprite:'miaw-actions.base64',description:'Chaton démon orange et noir'})
+ Object.freeze({id:'miaw',name:'Miaw',role:'DPS',sprite:'miaw-actions.base64',description:'Chaton démon orange et noir'}),
+ Object.freeze({id:'wouf',name:'Wouf',role:'Tank',sprite:'wouf-actions.png',description:'Chien démon bleu à cornes'})
 ]);
 export const MIAW_SHEET=Object.freeze({width:984,height:1599});
 // Coordonnées de chaque bande de la planche fournie. Elle ne contient qu'une vue

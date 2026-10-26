@@ -152,3 +152,23 @@ de mécaniques de combat. Le futur combat roguelike reste à développer.
 
 La sauvegarde, le recrutement, la mini-carte, la progression du héros et les collisions
 sont préservés.
+
+
+## Wouf — deuxième créature recrutée chez Maria (0.1.27)
+
+Wouf, chien démon bleu à cornes (rôle Tank **provisoire**, aucun combat encore disponible),
+est désormais proposé **en plus de Miaw** par Maria. La sélection reste unique à la fois :
+le joueur peut retourner auprès de Maria pour échanger Miaw contre Wouf et inversement.
+Le choix reste mémorisé dans `companionId` sans modifier la sauvegarde du héros.
+Wouf possède une planche transparente originale optimisée à 420 × 669 pixels et
+partagée à l'identique entre `docs/assets/wouf-actions.png` et
+`site/assets/wouf-actions.png`. Elle comprend des poses de profil, de face et de dos.
+Le panneau d'animations s'adapte au compagnon sélectionné et propose 17 catégories :
+repos profil/face/dos, marche profil/face/dos, saut, dégâts, K.O., attaque normale,
+attaque spéciale, morsure/griffes, boost, intimidation, esquive, sommeil et élémentaire,
+soit 101 images à jouer en comptant les poses réutilisées. Certaines catégories
+réemploient une rangée de sprites et/ou des frames déjà dessinées : la planche fournie
+ne comporte pas 101 dessins indépendants. Aucune anatomie supplémentaire n'est inventée.
+L'orientation face/dos est automatique en exploration ; le profil gauche est retourné.
+Les actions hors déplacement sont prévisualisables mais ne produisent pas de dégâts,
+le système de combat roguelike étant toujours en développement.

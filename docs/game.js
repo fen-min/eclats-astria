@@ -2,7 +2,8 @@ import {WIDTH,HEIGHT,TILE,SPAWN,MIRA,DIRECTIONS,noise,tileAt,walkable,near,step}
 import {STEP_DURATION_MS, movementPosition, characterPose} from './motion.js?v=0.1.16';
 import {renderTerrain,renderHouses,drawWindFoliage,drawWaterAnimation} from './terrain.js?v=0.1.21';
 import {mountHub,isGameActive} from './hub.js';
-import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.26';
+import {COMPANIONS,MIAW_SHEET,MIAW_ANIMATIONS,miawFrameRect,miawAnimation,companionById,initialCompanionPosition,appendFootstep,followTarget,facingDirection} from './companions.js?v=0.1.27';
+import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from './wouf.js?v=0.1.27';
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const mini=document.getElementById('minimap'),mc=mini.getContext('2d');
 const dialog=document.getElementById('dialog'),hint=document.getElementById('hint');
@@ -26,21 +27,38 @@ fetch(new URL('./assets/miaw-actions.base64?v=0.1.26',import.meta.url))
  .then(response=>{if(!response.ok)throw new Error('Atlas Miaw indisponible');return response.text();})
  .then(encoded=>{miawAtlas.src='data:image/png;base64,'+encoded.replace(/\s/g,'');})
  .catch(error=>console.warn('Miaw : image de secours',error));
-const miawPreview={kind:null,startedAt:0};
-const miawAnimationSelect=document.getElementById('miaw-animation-select');
-const miawAnimationPlay=document.getElementById('miaw-animation-play');
-for(const [kind,animation] of Object.entries(MIAW_ANIMATIONS)){
- const option=document.createElement('option');
- option.value=kind;option.textContent=animation.label+' · '+animation.frames+' images';
- miawAnimationSelect.append(option);
+const woufAtlas=new Image();
+let woufReady=false;
+woufAtlas.onload=()=>{woufReady=woufAtlas.naturalWidth===WOUF_SHEET.width&&woufAtlas.naturalHeight===WOUF_SHEET.height;};
+woufAtlas.onerror=()=>{woufReady=false;};
+woufAtlas.src=new URL('./assets/wouf-actions.png?v=0.1.27',import.meta.url).href;
+const companionPreview={kind:null,startedAt:0};
+const animationSelect=document.getElementById('companion-animation-select');
+const animationPlay=document.getElementById('companion-animation-play');
+const animationTitle=document.getElementById('companion-animation-title');
+function currentCompanionAnimations(){
+ return selectedCompanion?.id==='wouf'?WOUF_ANIMATIONS:MIAW_ANIMATIONS;
 }
-miawAnimationPlay.addEventListener('click',()=>{
+function updateAnimationControls(){
+ const options=currentCompanionAnimations();
+ animationSelect.replaceChildren();
+ for(const [kind,animation] of Object.entries(options)){
+  const option=document.createElement('option');
+  option.value=kind;option.textContent=animation.label+' · '+animation.frames+' images';
+  animationSelect.append(option);
+ }
+ animationTitle.textContent='Animations de '+(selectedCompanion?.name||'créature');
+ animationPlay.disabled=!selectedCompanion;
+ companionPreview.kind=null;
+}
+animationPlay.addEventListener('click',()=>{
  if(!selectedCompanion)return;
- const kind=miawAnimationSelect.value;
- if(!MIAW_ANIMATIONS[kind])return;
- miawPreview.kind=kind;
- miawPreview.startedAt=performance.now();
- notify('Miaw : '+MIAW_ANIMATIONS[kind].label);
+ const kind=animationSelect.value;
+ const animation=currentCompanionAnimations()[kind];
+ if(!animation)return;
+ companionPreview.kind=kind;
+ companionPreview.startedAt=performance.now();
+ notify(selectedCompanion.name+' : '+animation.label);
 });
 function resetFollower(){
  footsteps=[{x:player.x,y:player.y}];
@@ -54,7 +72,7 @@ function updateCompanionUI(){
  companionStatus.textContent=selectedCompanion
  ?selectedCompanion.name+' · '+selectedCompanion.role+' · Te suit'
  :'Aucun compagnon — parle à Maria.';
- miawAnimationPlay.disabled=!selectedCompanion;
+ updateAnimationControls();
 }
 updateCompanionUI();
 const keys=new Set();
@@ -217,28 +235,49 @@ function drawHero(px,py,dir,moving,now){
 }
 function drawCompanion(px,py,now){
  if(!selectedCompanion||!follower)return;
- ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,11,3,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#14261b6e';ctx.beginPath();ctx.ellipse(px,py,12,3,0,0,Math.PI*2);ctx.fill();
  const walking=Math.abs(follower.fromX-follower.toX)+Math.abs(follower.fromY-follower.toY)>.01
    && now-follower.stepStartedAt<STEP_DURATION_MS;
+ const isWouf=selectedCompanion.id==='wouf';
  let override=null;
- if(miawPreview.kind){
-  const animation=MIAW_ANIMATIONS[miawPreview.kind];
-  if(now-miawPreview.startedAt<animation.frames*1000/animation.fps){
-   override=miawPreview;
-  }else miawPreview.kind=null;
+ if(companionPreview.kind){
+  const animation=currentCompanionAnimations()[companionPreview.kind];
+  if(animation&&now-companionPreview.startedAt<animation.frames*1000/animation.fps)
+   override=companionPreview;
+  else companionPreview.kind=null;
  }
- const pose=miawAnimation(now,follower.dir,walking,Math.max(0,now-follower.lastMoveAt),override);
- if(miawReady){
+ const pose=isWouf
+  ?woufAnimation(now,follower.dir,walking,override)
+  :miawAnimation(now,follower.dir,walking,Math.max(0,now-follower.lastMoveAt),override);
+ if(isWouf&&woufReady){
+  ctx.save();ctx.translate(Math.round(px),Math.round(py));
+  // Les poses face et dos ne doivent pas être retournées pour les déplacements latéraux.
+  const directional=pose.kind==='idle_front'||pose.kind==='idle_back'
+   ||pose.kind==='walk_front'||pose.kind==='walk_back';
+  if(!directional&&follower.dir==='left')ctx.scale(-1,1);
+  ctx.imageSmoothingEnabled=false;
+  function drawWouf(kind,index){
+   const source=woufFrameRect(kind,index);
+   const dw=Math.round(source.width*1.13),dh=Math.round(source.height*1.13);
+   ctx.drawImage(woufAtlas,source.x,source.y,source.width,source.height,
+    -Math.round(dw/2),-dh+3,dw,dh);
+  }
+  // La dernière pose des effets ne dessine que les particules :
+  // afficher le compagnon dessous empêche sa disparition.
+  if((pose.kind==='elemental'||pose.kind==='special')&&pose.frame===7)
+   drawWouf('idle',0);
+  drawWouf(pose.kind,pose.frame);
+  ctx.restore();
+ }else if(!isWouf&&miawReady){
   ctx.save();
   ctx.translate(Math.round(px),Math.round(py));
-  // La nouvelle planche est de profil droit uniquement : on retourne à gauche.
   if(follower.dir==='left')ctx.scale(-1,1);
   ctx.imageSmoothingEnabled=false;
   function frame(kind,index,scale=.55,lift=0){
    const source=miawFrameRect(kind,index);
    const dw=Math.round(source.width*scale),dh=Math.round(source.height*scale);
    ctx.drawImage(miawAtlas,source.x,source.y,source.width,source.height,
-     -Math.round(dw/2),-dh+3+lift,dw,dh);
+    -Math.round(dw/2),-dh+3+lift,dw,dh);
   }
   if(pose.kind==='elemental'){
    frame('idle',0);
@@ -246,12 +285,13 @@ function drawCompanion(px,py,now){
   }else frame(pose.kind,pose.frame);
   ctx.restore();
  }else{
-  // Silhouette de secours pendant le chargement, aucun ancien atlas réutilisé.
-  rect(ctx,px-9,py-18,18,16,'#e15c25');
-  rect(ctx,px-7,py-23,5,7,'#30212c');
-  rect(ctx,px+2,py-23,5,7,'#30212c');
-  rect(ctx,px-4,py-13,3,3,'#f1bd76');
-  rect(ctx,px+2,py-13,3,3,'#f1bd76');
+  // Silhouette de secours si l'asset concerné n'est pas encore chargé.
+  const color=isWouf?'#293f86':'#e15c25';
+  rect(ctx,px-11,py-22,22,20,color);
+  rect(ctx,px-9,py-31,6,10,isWouf?'#e8e1d9':'#30212c');
+  rect(ctx,px+3,py-31,6,10,isWouf?'#e8e1d9':'#30212c');
+  rect(ctx,px-5,py-16,4,4,'#f1bd76');
+  rect(ctx,px+2,py-16,4,4,'#f1bd76');
  }
 }
 function followerOnHeroStep(now){
@@ -337,6 +377,7 @@ function renderCompanionChoices(){
     selectedCompanion=companionById(companion.id);
     resetFollower();
     persist();updateCompanionUI();
+    companionPreview.kind=null;
     notify(companion.name+' rejoint ton équipe !');
    }
    dialog.close();

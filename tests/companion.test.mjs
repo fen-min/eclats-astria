@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {WOUF_SHEET,WOUF_ANIMATIONS,woufFrameRect,woufAnimation} from '../site/wouf.js';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {SPAWN,walkable} from '../site/world.js';
@@ -9,8 +10,10 @@ import {
 } from '../site/companions.js';
 
 test('Miaw is recruitable and old save IDs still migrate',()=>{
- assert.equal(COMPANIONS.length,1);
+ assert.equal(COMPANIONS.length,2);
  assert.equal(companionById('miaw')?.name,'Miaw');
+ assert.equal(companionById('wouf')?.name,'Wouf');
+ assert.equal(companionById('wouf')?.role,'Tank');
  assert.equal(companionById('chat-rouge')?.id,'miaw');
  assert.equal(companionById('fake'),null);
  assert.equal(COMPANIONS[0].role,'DPS');
@@ -83,10 +86,54 @@ test('the browser and Pages builds preserve recruitment, save, and preview contr
   assert.match(js,/renderCompanionChoices\(/);
   assert.match(js,/miaw-actions\.base64\?v=0\.1\.26/);
   assert.match(js,/miawFrameRect\(/);
-  assert.match(js,/miawPreview/);
-  assert.match(html,/id="miaw-animation-play"/);
-  assert.match(html,/id="miaw-animation-select"/);
+  assert.match(js,/companionPreview/);
+  assert.match(js,/woufFrameRect\(/);
+  assert.match(js,/wouf-actions\.png\?v=0\.1\.27/);
+  assert.match(html,/id="companion-animation-play"/);
+  assert.match(html,/id="companion-animation-select"/);
   assert.match(html,/PARLER À MARIA/);
-  assert.match(html,/game\.js\?v=0\.1\.26/);
+  assert.match(html,/game\.js\?v=0\.1\.27/);
+ }
+});
+
+test('Wouf atlas has 17 playable animations and preserves the requested frame counts',()=>{
+ const expected={
+  idle:4,idle_front:4,idle_back:4,walk:8,walk_front:8,walk_back:8,
+  jump:6,hit:4,fainted:5,basic:6,special:8,claw:6,boost:6,
+  angry:4,dodge:8,sleep:4,elemental:8
+ };
+ assert.deepEqual(Object.fromEntries(Object.entries(WOUF_ANIMATIONS)
+  .map(([k,value])=>[k,value.frames])),expected);
+ assert.equal(Object.values(expected).reduce((a,b)=>a+b,0),101);
+ assert.deepEqual(WOUF_SHEET,{width:420,height:669});
+ for(const [kind,anim] of Object.entries(WOUF_ANIMATIONS)){
+  for(let frame=0;frame<anim.frames;frame++){
+   const r=woufFrameRect(kind,frame);
+   assert.ok(r.width>0&&r.height>0,kind);
+   assert.ok(r.x>=0&&r.y>=0&&r.x+r.width<=WOUF_SHEET.width,kind);
+   assert.ok(r.y+r.height<=WOUF_SHEET.height,kind);
+  }
+ }
+ for(const dir of ['docs','site']){
+  const path=new URL('../'+dir+'/assets/wouf-actions.png',import.meta.url);
+  const png=readFileSync(path);
+  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16),WOUF_SHEET.width);
+  assert.equal(png.readUInt32BE(20),WOUF_SHEET.height);
+  assert.ok(png.length>60000);
+ }
+ assert.deepEqual(readFileSync(new URL('../docs/assets/wouf-actions.png',import.meta.url)),
+  readFileSync(new URL('../site/assets/wouf-actions.png',import.meta.url)));
+});
+test('Wouf automatically faces side, front and back and all previews reach their final frames',()=>{
+ for(const [dir,expected] of [['right','idle'],['left','idle'],['down','idle_front'],['up','idle_back']]){
+  assert.equal(woufAnimation(0,dir,false).kind,expected);
+ }
+ for(const [dir,expected] of [['right','walk'],['left','walk'],['down','walk_front'],['up','walk_back']]){
+  assert.equal(woufAnimation(0,dir,true).kind,expected);
+ }
+ for(const [kind,anim] of Object.entries(WOUF_ANIMATIONS)){
+  assert.deepEqual(woufAnimation(1000,'down',false,{kind,startedAt:1000}),{kind,frame:0});
+  assert.equal(woufAnimation(1000+(anim.frames-0.3)*1000/anim.fps,'up',true,{kind,startedAt:1000}).frame,anim.frames-1);
  }
 });
